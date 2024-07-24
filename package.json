@@ -17,6 +17,8 @@
     "primeflex": "^3.3.1",
     "primeicons": "^7.0.0",
     "primevue": "^3.49.1",
+    "sweetalert2": "^11.11.0",
+    "vite-plugin-eslint": "^1.8.1",
     "vue": "^3.4.15",
     "vue-router": "^4.2.5",
     "xlsx": "^0.18.5"
@@ -27,11 +29,16 @@
     "@vue/eslint-config-airbnb": "^7.0.0",
     "@vue/eslint-config-prettier": "^8.0.0",
     "@vue/test-utils": "^2.4.4",
-    "eslint": "^8.49.0",
+    "eslint": "^8.52.0",
     "eslint-plugin-vue": "^9.17.0",
     "jsdom": "^24.0.0",
-    "prettier": "^3.0.3",
+    "prettier": "^3.1.0",
+    "prettier-eslint": "^16.1.2",
     "vite": "^5.0.11",
-    "vitest": "^1.2.2"
+    "vitest": "^1.2.2",
+    "vue-eslint-parser": "^8.0.0"
+  },
+  "resolutions": {
+    "jackspeak": "2.1.1"
   }
 }

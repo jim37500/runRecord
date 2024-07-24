@@ -2,11 +2,21 @@ package main
 
 import (
 	"log"
+	"os"
+	"path/filepath"
+	"runRecord/configuration"
 	"runRecord/database"
 	"runRecord/router"
 )
 
 func main() {
+	// 設定執行檔路徑
+	ExecutPath, _ := os.Executable()
+	ExecutPath = filepath.Dir(ExecutPath)
+	configuration.ExecutPath = ExecutPath
+
+	configuration.ReadConfiguration() // 讀取設定檔
+	
 	log.Println("Opening Project DB...")
 
 	// 連線資料庫

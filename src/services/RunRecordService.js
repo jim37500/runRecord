@@ -7,13 +7,74 @@ export default class RunRecordService {
   }
 
   // 新增跑步紀錄
-  static AddRunRecord(Date, TotalDistance, TotalTime, AvgPace, Temperature, TrainingType, Detail, Feeling) {
-    return axios.post('/api/runRecord', { Date, TotalDistance, TotalTime, AvgPace, Temperature, TrainingType, Detail, Feeling });
+  static AddRunRecord(
+    Date,
+    TotalDistance,
+    TotalTime,
+    AvgPace,
+    AvgHR,
+    AvgRunCadence,
+    AvgGroundContactTime,
+    AvgStrideLength,
+    AvgVerticalOscillation,
+    AvgVerticalRatio,
+    Temperature,
+    TrainingType,
+    Detail,
+    Feeling,
+  ) {
+    return axios.post('/api/runRecord', {
+      Date,
+      TotalDistance,
+      TotalTime,
+      AvgPace,
+      AvgHR,
+      AvgRunCadence,
+      AvgGroundContactTime,
+      AvgStrideLength,
+      AvgVerticalOscillation,
+      AvgVerticalRatio,
+      Temperature,
+      TrainingType,
+      Detail,
+      Feeling,
+    });
   }
 
   // 更新跑步紀錄
-  static UpdateRunRecord(ID, Date, TotalDistance, TotalTime, AvgPace, Temperature, TrainingType, Detail, Feeling) {
-    return axios.put(`/api/runRecord/${ID}`, { Date, TotalDistance, TotalTime, AvgPace, Temperature, TrainingType, Detail, Feeling });
+  static UpdateRunRecord(
+    ID,
+    Date,
+    TotalDistance,
+    TotalTime,
+    AvgPace,
+    AvgHR,
+    AvgRunCadence,
+    AvgGroundContactTime,
+    AvgStrideLength,
+    AvgVerticalOscillation,
+    AvgVerticalRatio,
+    Temperature,
+    TrainingType,
+    Detail,
+    Feeling,
+  ) {
+    return axios.put(`/api/runRecord/${ID}`, {
+      Date,
+      TotalDistance,
+      TotalTime,
+      AvgPace,
+      AvgHR,
+      AvgRunCadence,
+      AvgGroundContactTime,
+      AvgStrideLength,
+      AvgVerticalOscillation,
+      AvgVerticalRatio,
+      Temperature,
+      TrainingType,
+      Detail,
+      Feeling,
+    });
   }
 
   // 刪除跑步紀錄

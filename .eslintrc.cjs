@@ -15,10 +15,10 @@ module.exports = {
     'vue/max-len': ['error', { code: 200, template: 200, comments: 200 }],
   },
   overrides: [
-    {
-      files: ['cypress/e2e/**/*.{cy,spec}.{js,ts,jsx,tsx}'],
-      extends: ['plugin:cypress/recommended'],
-    },
+    // {
+    //   files: ['cypress/e2e/**/*.{cy,spec}.{js,ts,jsx,tsx}'],
+    //   extends: ['plugin:cypress/recommended'],
+    // },
   ],
   parserOptions: {
     ecmaVersion: 'latest',

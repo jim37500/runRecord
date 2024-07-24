@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"runRecord/configuration"
 	"runRecord/model"
 	"time"
 
@@ -18,7 +19,7 @@ var (
 func Open() {
 
 	ctx := context.Background()
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017") // Replace with your connection string
+	clientOptions := options.Client().ApplyURI(configuration.Connectionstring)
 
 	var err error
 	client, err = mongo.Connect(ctx, clientOptions)
