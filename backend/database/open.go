@@ -17,7 +17,6 @@ var (
 )
 
 func Open() {
-
 	ctx := context.Background()
 	clientOptions := options.Client().ApplyURI(configuration.Connectionstring)
 

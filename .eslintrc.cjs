@@ -8,6 +8,7 @@ module.exports = {
   rules: {
     'vue/multi-word-component-names': 'off',
     'vue/no-reserved-component-names': 'off',
+    'vuejs-accessibility/form-control-has-label': 'off',
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     quotes: ['error', 'single'],
     semi: ['error', 'always'],

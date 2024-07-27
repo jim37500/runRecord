@@ -1,11 +1,12 @@
 import './assets/main.css';
-import 'primevue/resources/themes/aura-light-green/theme.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 
 import { createApp } from 'vue';
 
 import PrimeVue from 'primevue/config';
+import Aura from '@primevue/themes/aura';
+
 import * as XLSX from 'xlsx/xlsx.mjs';
 import moment from 'moment';
 import Swal from 'sweetalert2';
@@ -14,13 +15,21 @@ import Button from 'primevue/button';
 import FileUpload from 'primevue/fileupload';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
-import Dropdown from 'primevue/dropdown';
+import Select from 'primevue/select';
 import Dialog from 'primevue/dialog';
-import Calendar from 'primevue/calendar';
+import DatePicker from 'primevue/datepicker';
 import InputNumber from 'primevue/inputnumber';
 import InputText from 'primevue/inputtext';
-
+import Menubar from 'primevue/menubar';
 import Tag from 'primevue/tag';
+
+import FullCalendar from '@fullcalendar/vue3';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import listPlugin from '@fullcalendar/list';
+import interactionPlugin from '@fullcalendar/interaction';
+
+import * as echarts from 'echarts';
 
 import App from './App.vue';
 import router from './router';
@@ -30,20 +39,37 @@ const app = createApp(App);
 window.XLSX = XLSX;
 window.moment = moment; // 時間格式
 window.Swal = Swal;
+window.dayGridPlugin = dayGridPlugin;
+window.timeGridPlugin = timeGridPlugin;
+window.listPlugin = listPlugin;
+window.interactionPlugin = interactionPlugin;
+window.echarts = echarts;
 
 app.use(router);
-app.use(PrimeVue);
+app.use(PrimeVue, {
+  theme: {
+    preset: Aura,
+    options: {
+      cssLayer: {
+        name: 'primevue',
+        order: 'tailwind-base, primevue, tailwind-utilities',
+      },
+    },
+  },
+});
 
 app.component('Button', Button);
 app.component('FileUpload', FileUpload);
 app.component('DataTable', DataTable);
 app.component('Dialog', Dialog);
-app.component('Dropdown', Dropdown);
+app.component('Select', Select);
 
 app.component('Column', Column);
 app.component('Tag', Tag);
-app.component('Calendar', Calendar);
+app.component('DatePicker', DatePicker);
 app.component('InputNumber', InputNumber);
 app.component('InputText', InputText);
+app.component('Menubar', Menubar);
+app.component('FullCalendar', FullCalendar);
 
 app.mount('#app');
