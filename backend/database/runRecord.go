@@ -1,51 +1,88 @@
 package database
 
 import (
-	"context"
-	"runRecord/model"
+	"math"
+	"time"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"runRecord/data"
+	"runRecord/model"
 )
 
-// 取得跑步紀錄
-func GetRunRecord() (results []model.RunRecord) {
-	data := client.Database("runRecord").Collection("run_records")
-
-	cursor, _ := data.Find(context.TODO(), bson.M{})
-
-	for cursor.Next(context.Background()) {
-        var record model.RunRecord
-        err := cursor.Decode(&record)
-        if err != nil {
-            return nil
-        }
-        results = append(results, record)
-    }
+// 取得運動員最近一次的跑步活動
+func GetLatestRunActivity(athleteID uint64) (runActivity model.RunActivity) {
+	db.Where("athlete_id = ?", athleteID).Order("date DESC").First(&runActivity)
 
 	return
 }
 
-// 加入跑步紀錄
-func AddRunRecord(newRecord model.RunRecord) bool{
-	collection := client.Database("runRecord").Collection("run_records")
-	_, err := collection.InsertOne(context.TODO(), newRecord)
+// 取得跑步活動
+func GetRunActivities(athleteID uint64) (runActivities []model.RunActivity) {
+	db.Where("athlete_id = ?", athleteID).Find(&runActivities)
 
-	return err == nil
+	return
 }
 
-// 更新跑步紀錄
-func UpdateRunRecord(id primitive.ObjectID, newRecord model.RunRecord) bool{
-	collection := client.Database("runRecord").Collection("run_records")
-	result, err := collection.ReplaceOne(context.TODO(), bson.M{"_id": id}, newRecord)
+// 取得跑步活動圈數
+func GetRunLaps(athleteID uint64, activityID string) (runLaps []model.RunLap) {
+	db.Where("athlete_id = ? AND activity_id = ?", athleteID, activityID).Find(&runLaps)
 
-	return err == nil && result.ModifiedCount != 0
+	return
 }
 
-// 刪除跑步紀錄
-func DeleteRunRecord(id primitive.ObjectID) bool{
-	collection := client.Database("runRecord").Collection("run_records")
-	result, err := collection.DeleteOne(context.TODO(), bson.M{"_id": id})
+// 新增跑步活動
+func AddRunActivity(runActivities []data.RunActivities) bool {
+	var myRunActivities []model.RunActivity
+	for _, runActitvity := range runActivities {
+		if runActitvity.SportType != "Run" {
+			continue
+		}
 
-	return err == nil && result.DeletedCount != 0
+		runDate, _ := time.Parse(time.RFC3339, runActitvity.Date)
+
+		myRunActivities = append(myRunActivities, model.RunActivity{
+			ID:               runActitvity.ActivityID,
+			AthleteID:        runActitvity.Athlete.AthleteID,
+			Name:             runActitvity.Name,
+			Date:             runDate,
+			ElapsedTime:      runActitvity.ElapsedTime,
+			MovingTime:       runActitvity.MovingTime,
+			Distance:         int(math.Round(float64(runActitvity.Distance))),
+			AverageSpeed:     runActitvity.AverageSpeed * 3.6,
+			MaxSpeed:         runActitvity.MaxSpeed * 3.6,
+			AverageCadence:   int(math.Round(float64(runActitvity.AverageCadence * 2))),
+			AverageHeartrate: int(math.Round(float64(runActitvity.AverageHeartrate))),
+			MaxHeartrate:     int(math.Round(float64(runActitvity.MaxHeartrate))),
+			AverageWatts:     int(math.Round(float64(runActitvity.AverageWatts))),
+			MaxWatts:         int(math.Round(float64(runActitvity.MaxWatts))),
+		})
+	}
+
+	if len(myRunActivities) == 0 {
+		return true
+	}
+
+	return db.Create(&myRunActivities).Error == nil
+}
+
+// 新增跑步圈數
+func AddRunLaps(runLaps []data.RunLap) bool {
+	var myRunLaps []model.RunLap
+	for _, runLap := range runLaps {
+		myRunLaps = append(myRunLaps, model.RunLap{
+			ID:               runLap.LapID,
+			ActivityID:       runLap.Activity.ActivityID,
+			AthleteID:        runLap.Athlete.AthleteID,
+			ElapsedTime:      runLap.ElapsedTime,
+			MovingTime:       runLap.MovingTime,
+			Distance:         int(math.Round(float64(runLap.Distance))),
+			AverageSpeed:     runLap.AverageSpeed * 3.6,
+			MaxSpeed:         runLap.MaxSpeed * 3.6,
+			AverageCadence:   int(math.Round(float64(runLap.AverageCadence * 2))),
+			AverageHeartrate: int(math.Round(float64(runLap.AverageHeartrate))),
+			MaxHeartrate:     int(math.Round(float64(runLap.MaxHeartrate))),
+			AverageWatts:     int(math.Round(float64(runLap.AverageWatts))),
+		})
+	}
+
+	return db.Create(&myRunLaps).Error == nil
 }

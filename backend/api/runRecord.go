@@ -2,55 +2,80 @@ package api
 
 import (
 	"runRecord/database"
-	"runRecord/model"
 
 	"github.com/gofiber/fiber/v2"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	// "go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// 取得跑步紀錄
-func GetRunRecord(context *fiber.Ctx) error {
-	return context.JSON(database.GetRunRecord())
+// 取得跑步活動
+func GetRunActivities(context *fiber.Ctx) error {
+	athleteID, _ := context.ParamsInt("athleteid")                 // 運動員主鍵
+	myAthlete := database.GetAthleteByAthleteID(uint64(athleteID)) // 依運動員主鍵取得運動員
+
+	_ = FetchStravaActivities(myAthlete)
+
+	return context.JSON(database.GetRunActivities(myAthlete.ID))
 }
 
-// 加入跑步紀錄
-func AddRunRecord(context *fiber.Ctx) error {
-	var myRunRecord model.RunRecord
-	_ = context.BodyParser(&myRunRecord)
+// 取得跑步活動圈數
+func GetRunActivityLaps(context *fiber.Ctx) error {
+	athleteID, _ := context.ParamsInt("athleteid") // 運動員主鍵
+	activityID := context.Params("activityid")     // 跑步活動主鍵
 
+	myAthlete := database.GetAthleteByAthleteID(uint64(athleteID)) // 依運動員主鍵取得運動員
 
-	if database.AddRunRecord(myRunRecord) {
-		return context.SendStatus(fiber.StatusOK)
+	runLaps := database.GetRunLaps(myAthlete.ID, activityID) // 取得跑步活動圈數
+
+	// 若 沒有跑步圈數 則 爬取後再取得跑步活動圈數
+	if len(runLaps) == 0 {
+		_ = FetchStravaLaps(myAthlete, activityID)
+		runLaps = database.GetRunLaps(myAthlete.ID, activityID) // 取得跑步活動圈數
 	}
-	
-	return context.SendStatus(fiber.StatusInternalServerError)
+
+	return context.JSON(runLaps)
 }
 
-// 更新跑步紀錄
-func UpdateRunRecord(context *fiber.Ctx) error {
-	var myRunRecord model.RunRecord
-	_ = context.BodyParser(&myRunRecord)
+// // 取得跑步紀錄
+// func GetRunRecord(context *fiber.Ctx) error {
+// 	return context.JSON(database.GetRunRecord())
+// }
 
-	idString := context.Params("id")
-	id, _ := primitive.ObjectIDFromHex(idString)
+// // 加入跑步紀錄
+// func AddRunRecord(context *fiber.Ctx) error {
+// 	var myRunRecord model.RunRecord
+// 	_ = context.BodyParser(&myRunRecord)
 
+// 	if database.AddRunRecord(myRunRecord) {
+// 		return context.SendStatus(fiber.StatusOK)
+// 	}
 
-	if database.UpdateRunRecord(id, myRunRecord) {
-		return context.SendStatus(fiber.StatusOK)
-	}
-	
-	return context.SendStatus(fiber.StatusInternalServerError)
-}
+// 	return context.SendStatus(fiber.StatusInternalServerError)
+// }
 
-// 刪除跑步紀錄
-func DeleteRunRecord(context *fiber.Ctx) error {
-	idString := context.Params("id")
+// // 更新跑步紀錄
+// func UpdateRunRecord(context *fiber.Ctx) error {
+// 	var myRunRecord model.RunRecord
+// 	_ = context.BodyParser(&myRunRecord)
 
-	id, _ := primitive.ObjectIDFromHex(idString)
+// 	idString := context.Params("id")
+// 	id, _ := primitive.ObjectIDFromHex(idString)
 
-	if database.DeleteRunRecord(id) {
-		return context.SendStatus(fiber.StatusOK)
-	}
-	
-	return context.SendStatus(fiber.StatusInternalServerError)
-}
+// 	if database.UpdateRunRecord(id, myRunRecord) {
+// 		return context.SendStatus(fiber.StatusOK)
+// 	}
+
+// 	return context.SendStatus(fiber.StatusInternalServerError)
+// }
+
+// // 刪除跑步紀錄
+// func DeleteRunRecord(context *fiber.Ctx) error {
+// 	idString := context.Params("id")
+
+// 	id, _ := primitive.ObjectIDFromHex(idString)
+
+// 	if database.DeleteRunRecord(id) {
+// 		return context.SendStatus(fiber.StatusOK)
+// 	}
+
+// 	return context.SendStatus(fiber.StatusInternalServerError)
+// }

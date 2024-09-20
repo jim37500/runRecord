@@ -39,8 +39,6 @@ func notFoundHandler(context *fiber.Ctx, err error) error {
 
 // 設定路由
 func setupRoute() {
-	HttpApplication.Get("/api/runrecord", api.GetRunRecord) // 取得跑步紀錄
-	HttpApplication.Post("/api/runrecord", api.AddRunRecord) // 新增跑步紀錄
-	HttpApplication.Put("/api/runrecord/:id", api.UpdateRunRecord) // 更新跑步紀錄
-	HttpApplication.Delete("/api/runrecord/:id", api.DeleteRunRecord) // 刪除跑步紀錄
+	HttpApplication.Get("/api/activities/:athleteid", api.GetRunActivities) // 取得跑步紀錄
+	HttpApplication.Get("/api/activities/laps/:athleteid/:activityid", api.GetRunActivityLaps) // 取得跑步紀錄圈數
 }

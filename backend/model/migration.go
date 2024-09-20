@@ -1,21 +1,33 @@
 package model
 
 import (
-	"context"
-
-	"go.mongodb.org/mongo-driver/bson"
-
-	"go.mongodb.org/mongo-driver/mongo"
+	"gorm.io/gorm"
 )
 
-func AutoMigrate(client *mongo.Client) {
-	createRunRecordCollection(client, "run_records")
+// 自動遷移資料庫
+func AutoMigrate(db *gorm.DB) {
+	migrateTable(db, &Athlete{})
+	migrateTable(db, &RunActivity{})
+	migrateTable(db, &RunLap{})
+
+	checkTableData(db)
 }
 
-func createRunRecordCollection(client *mongo.Client, collectionName string) {
+// 轉移資料表結構
+func migrateTable(db *gorm.DB, structure interface{}) {
+	if !db.Migrator().HasTable(structure) {
+		// _ = db.Set("gorm:table_options", " COMMENT='"+tableName+"'").Migrator().CreateTable(structure)
+		_ = db.Migrator().CreateTable(structure)
+	}
+	_ = db.AutoMigrate(structure)
+}
 
-	db := client.Database("runRecord")
-	command := bson.D{{Key: "create", Value: collectionName}}
-	var result bson.M
-	_ = db.RunCommand(context.TODO(), command).Decode(&result)
+// 檢查資料表有無資料
+func checkTableData(db *gorm.DB) {
+	// 若 沒運動員
+	var athlete Athlete
+	if db.First(&athlete).RowsAffected == 0 {
+		role := []Athlete{{ID: 108845218, ClientID: 134888, ClientSecret: "a613adf2b923051df828c21c1101895288334333", AccessToken: "dacc2edac2a5ced86883014ad2dec4c797cd065b", RefreshToken: "cb36f0f9e76a74b35d4df32a8a36693256cea1e9"}}
+		db.Create(role)
+	}
 }
