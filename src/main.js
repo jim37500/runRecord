@@ -1,6 +1,5 @@
 import './assets/main.css';
 import 'primeicons/primeicons.css';
-import 'primeflex/primeflex.css';
 
 import { createApp } from 'vue';
 
@@ -37,6 +36,7 @@ import router from './router';
 const app = createApp(App);
 
 window.XLSX = XLSX;
+window.router = router;
 window.moment = moment; // 時間格式
 window.Swal = Swal;
 window.dayGridPlugin = dayGridPlugin;
@@ -49,12 +49,12 @@ app.use(router);
 app.use(PrimeVue, {
   theme: {
     preset: Aura,
-    options: {
-      cssLayer: {
-        name: 'primevue',
-        order: 'tailwind-base, primevue, tailwind-utilities',
-      },
-    },
+    // options: {
+    //   cssLayer: {
+    //     name: 'primevue',
+    //     order: 'primevue',
+    //   },
+    // },
   },
 });
 

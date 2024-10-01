@@ -1,13 +1,15 @@
 <template>
-  <div class="w-12 md:w-10">
-    <div class="text-4xl font-semibold my-2">跑步紀錄</div>
+  <div class="">
+    <div class="text-4xl font-semibold my-2 text-blue-500">跑步紀錄</div>
+
+    <Button severity="primary" class="bg-sky-200" label="測試" />
 
     <div class="">
-      <div class="w-6">
-        <FullCalendar ref="MyCalendar" :options="CalendarOptions" class="w-12" />
+      <div class="">
+        <FullCalendar ref="MyCalendar" :options="CalendarOptions" class="" />
       </div>
 
-      <DataTable :value="RunRecordData">
+      <!-- <DataTable :value="RunRecordData">
         <Column field="Date" header="日期">
           <template #body="slotProps">
             {{ moment(new Date(slotProps.data.Date)).format('YYYY/MM/DD') }}
@@ -23,7 +25,7 @@
             <Button @click="DeleteRunRecord(slotProps.data)" icon="pi pi-trash" severity="danger" />
           </template>
         </Column>
-      </DataTable>
+      </DataTable> -->
     </div>
 
     <Dialog v-model:visible="IsModelVisible" modal header="新增跑步紀錄" class="w-11">
@@ -77,12 +79,12 @@ import { ref, reactive } from 'vue';
 import RunRecordService from '../services/RunRecordService';
 import UtilityService from '../services/UtilityService';
 
-const { moment } = window; // 時間格式
-const { Alert, Confirm } = UtilityService; // 時間格式
+// const { moment } = window; // 時間格式
+const { Alert } = UtilityService; // 時間格式
 const MyUpload = ref(null); // 上傳資料
 const MyCalendar = ref(); // 外勤紀錄本體
 const IsModelVisible = ref(false); // 新增跑步紀錄對話框
-const RunRecordData = ref([]); // 全部跑步資料
+// const RunRecordData = ref([]); // 全部跑步資料
 const NowID = ref(0); // 現在跑步紀錄主鍵
 const NowRunRecordData = ref({}); // 現在跑步紀錄資料
 const NowDate = ref(); // 現在日期
@@ -106,19 +108,7 @@ const TrainingTypeOption = ref([
 const NowUploadData = ref([]); // 上傳資料
 const NowUploadExcelColumn = ref([]); // 上傳資料Excel欄位
 
-// const Add = () => {
-//   NowID.value = 0;
-//   NowRunRecordData.value = {}; // 現在跑步紀錄資料
-//   NowDate.value = new Date(); // 現在日期
-//   NowTemperature.value = 20; // 現在溫度
-//   NowFeeling.value = {}; // 現在體感
-//   NowTrainingType.value = {}; // 現在訓練類別
-//   NowUploadData.value = [];
-//   NowUploadExcelColumn.value = [];
-
-//   IsModelVisible.value = true;
-// };
-
+// 日期點擊事件
 const dateClick = (o) => {
   NowID.value = 0;
   NowName.value = '';
@@ -129,6 +119,20 @@ const dateClick = (o) => {
   NowTrainingType.value = {}; // 現在訓練類別
   NowUploadData.value = [];
   NowUploadExcelColumn.value = [];
+
+  IsModelVisible.value = true;
+};
+
+// 事件點擊事件
+const eventClick = (info) => {
+  const record = info.event.extendedProps;
+  console.log(info.event.extendedProps);
+  NowID.value = record.ID;
+  NowName.value = record.Name;
+  NowDate.value = new Date(record.Date); // 現在日期
+  NowTemperature.value = record.Temperature;
+  NowFeeling.value = { Name: record.Feeling };
+  NowTrainingType.value = { Name: record.TrainingType };
 
   IsModelVisible.value = true;
 };
@@ -149,11 +153,11 @@ const CalendarOptions = reactive({
   showNonCurrentDates: false, // 只顯示當月日期
   selectable: true, // 活動可選
   events: [],
-  dateClick,
+  dateClick, // 日期點擊事件
   eventOrder: '-allDay, start', // 是否整天, 起始時間排序
   // moreLinkContent, // 更多外勤紀錄事項文字前置
   // moreLinkDidMount, // 設置更多外勤紀錄事項文字
-  // eventClick, // 外勤紀錄事項點擊事件
+  eventClick, // 外勤紀錄事項點擊事件
   // dayCellContent, // 每日單元內容
 });
 
@@ -207,16 +211,17 @@ reader.onload = (o) => {
 
 // 載入資料
 const LoadData = () => {
+  IsModelVisible.value = false;
   // 取得跑步紀錄
-  RunRecordService.GetRunRecord().then((o) => {
-    RunRecordData.value = o;
-    RunRecordData.value.forEach((p) => {
-      const event = p;
-      event.start = p.Date;
-      event.title = p.Name ? p.Name : `${p.TotalDistance}K`;
-    });
-    CalendarOptions.events = RunRecordData.value;
-  });
+  // RunRecordService.GetRunRecord().then((o) => {
+  //   RunRecordData.value = o;
+  //   RunRecordData.value.forEach((p) => {
+  //     const event = p;
+  //     event.start = p.Date;
+  //     event.title = p.Name ? p.Name : `${p.TotalDistance}K`;
+  //   });
+  //   CalendarOptions.events = RunRecordData.value;
+  // });
 };
 LoadData();
 
@@ -253,29 +258,26 @@ const Save = () => {
   if (!NowID.value) {
     return RunRecordService.AddRunRecord(record)
       .then(() => Alert('新增跑步紀錄成功', 'success'))
-      .then(() => {
-        LoadData();
-        IsModelVisible.value = false;
-      })
+      .then(() => LoadData)
       .catch(() => Alert('新增跑步紀錄失敗', 'error'));
   }
   return null;
 };
 
-const ViewRunRecord = (data) => {
-  console.log(data);
-};
+// const ViewRunRecord = (data) => {
+//   console.log(data);
+// };
 
-const DeleteRunRecord = (data) => {
-  Confirm(`確定要刪除${moment(new Date(data.Date)).format('YYYY/MM/DD')}-${data.TrainingType}`).then((o) => {
-    if (!o.isConfirmed) return;
+// const DeleteRunRecord = (data) => {
+//   Confirm(`確定要刪除${moment(new Date(data.Date)).format('YYYY/MM/DD')}-${data.TrainingType}`).then((o) => {
+//     if (!o.isConfirmed) return;
 
-    RunRecordService.DeleteRunRecord(data.ID)
-      .then(() => Alert('刪除成功', 'success'))
-      .then(() => LoadData())
-      .catch(() => Alert('刪除失敗', 'error'));
-  });
-};
+//     RunRecordService.DeleteRunRecord(data.ID)
+//       .then(() => Alert('刪除成功', 'success'))
+//       .then(() => LoadData())
+//       .catch(() => Alert('刪除失敗', 'error'));
+//   });
+// };
 </script>
 
 <style>
