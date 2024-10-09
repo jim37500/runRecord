@@ -14,7 +14,7 @@ import (
 )
 
 var urlMap = map[string]string{
-	"getLoggedInAthleteActivities": "https://www.strava.com/api/v3/athlete/activities",
+	"getLoggedInAthleteActivities": "https://www.strava.com/api/v3/athlete/activities?per_page=200",
 	"getLapsByActivityId":          "https://www.strava.com/api/v3/activities/{id}/laps",
 	"refreshToken":                 "https://www.strava.com/api/v3/oauth/token?", // client_id={client_id}&client_secret={client_secret}&grant_type=refresh_token&refresh_token={refresh_token}
 }
@@ -70,24 +70,36 @@ func FetchStravaActivities(myAthlete model.Athlete) error {
 	lastRunActivity := database.GetLatestRunActivity(uint64(myAthlete.ID)) // 取得運動員最近一次的跑步活動
 	// 若 有最後一次跑步活動 則 爬取這之後的活動
 	if lastRunActivity.ID != 0 {
-		url += fmt.Sprintf("?after=%d", lastRunActivity.Date.Unix())
+		url += fmt.Sprintf("&after=%d", lastRunActivity.Date.Unix())
 	}
 
-	result, err := FetchStravaApi("GET", url, myAthlete.AccessToken, []data.RunActivities{})
-	if err != nil {
-		accessToken := FetchNewAccessToken(myAthlete)
+	var activities []data.RunActivities
 
-		if accessToken == "" {
-			return errors.New("Invalid AccessToken")
-		}
-
-		result, err = FetchStravaApi("GET", url, accessToken, []data.RunActivities{})
+	page := 1
+	for {
+		result, err := FetchStravaApi("GET", fmt.Sprintf("%s&page=%d", url, page), myAthlete.AccessToken, []data.RunActivities{})
 		if err != nil {
-			return errors.New("Error fetching strava api")
+			accessToken := FetchNewAccessToken(myAthlete)
+
+			if accessToken == "" {
+				return errors.New("Invalid AccessToken")
+			}
+
+			myAthlete.AccessToken = accessToken
+			result, err = FetchStravaApi("GET", url, myAthlete.AccessToken, []data.RunActivities{})
+			if err != nil {
+				return errors.New("Error fetching strava api")
+			}
 		}
+
+		if len(result) == 0 {
+			break
+		}
+		page += 1
+		activities = append(activities, result...)
 	}
 
-	if !database.AddRunActivity(result) {
+	if !database.AddRunActivity(activities) {
 		return errors.New("Error Saving run activities")
 	}
 

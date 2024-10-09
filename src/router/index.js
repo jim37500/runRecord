@@ -5,10 +5,10 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      component: () => import('../views/Home.vue'),
+      component: () => import('../views/root-page.vue'),
       children: [
-        { path: '', name: '', component: () => import('../views/Welcome.vue') },
-        { path: 'runrecord', name: '', component: () => import('../views/RunRecord.vue') },
+        { path: '', name: '', component: () => import('../views/home-page.vue') },
+        { path: 'runrecord', name: '', component: () => import('../views/run-record.vue') },
       ],
     },
   ],

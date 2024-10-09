@@ -17,7 +17,7 @@ func GetLatestRunActivity(athleteID uint64) (runActivity model.RunActivity) {
 
 // 取得跑步活動
 func GetRunActivities(athleteID uint64) (runActivities []model.RunActivity) {
-	db.Where("athlete_id = ?", athleteID).Find(&runActivities)
+	db.Where("athlete_id = ?", athleteID).Order("date DESC").Find(&runActivities)
 
 	return
 }
@@ -69,18 +69,19 @@ func AddRunLaps(runLaps []data.RunLap) bool {
 	var myRunLaps []model.RunLap
 	for _, runLap := range runLaps {
 		myRunLaps = append(myRunLaps, model.RunLap{
-			ID:               runLap.LapID,
-			ActivityID:       runLap.Activity.ActivityID,
-			AthleteID:        runLap.Athlete.AthleteID,
-			ElapsedTime:      runLap.ElapsedTime,
-			MovingTime:       runLap.MovingTime,
-			Distance:         int(math.Round(float64(runLap.Distance))),
-			AverageSpeed:     runLap.AverageSpeed * 3.6,
-			MaxSpeed:         runLap.MaxSpeed * 3.6,
-			AverageCadence:   int(math.Round(float64(runLap.AverageCadence * 2))),
-			AverageHeartrate: int(math.Round(float64(runLap.AverageHeartrate))),
-			MaxHeartrate:     int(math.Round(float64(runLap.MaxHeartrate))),
-			AverageWatts:     int(math.Round(float64(runLap.AverageWatts))),
+			ID:                 runLap.LapID,
+			ActivityID:         runLap.Activity.ActivityID,
+			AthleteID:          runLap.Athlete.AthleteID,
+			ElapsedTime:        runLap.ElapsedTime,
+			MovingTime:         runLap.MovingTime,
+			Distance:           int(math.Round(float64(runLap.Distance))),
+			AverageSpeed:       runLap.AverageSpeed * 3.6,
+			MaxSpeed:           runLap.MaxSpeed * 3.6,
+			AverageCadence:     int(math.Round(float64(runLap.AverageCadence * 2))),
+			AverageHeartrate:   int(math.Round(float64(runLap.AverageHeartrate))),
+			MaxHeartrate:       int(math.Round(float64(runLap.MaxHeartrate))),
+			AverageWatts:       int(math.Round(float64(runLap.AverageWatts))),
+			TotalElevationGain: int(math.Round(float64(runLap.TotalElevationGain * 10))),
 		})
 	}
 

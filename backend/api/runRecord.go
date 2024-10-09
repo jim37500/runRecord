@@ -1,20 +1,35 @@
 package api
 
 import (
+	"fmt"
+	"time"
+
 	"runRecord/database"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/patrickmn/go-cache"
 	// "go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+var runRecordCache = cache.New(30*time.Minute, 60*time.Minute)
+
 // 取得跑步活動
 func GetRunActivities(context *fiber.Ctx) error {
-	athleteID, _ := context.ParamsInt("athleteid")                 // 運動員主鍵
+	athleteID, _ := context.ParamsInt("athleteid") // 運動員主鍵
+	cacheKey := fmt.Sprintf("runRecord-%d", athleteID)
+
+	if cachedData, found := runRecordCache.Get(cacheKey); found {
+		return context.JSON(cachedData)
+	}
+
 	myAthlete := database.GetAthleteByAthleteID(uint64(athleteID)) // 依運動員主鍵取得運動員
 
 	_ = FetchStravaActivities(myAthlete)
 
-	return context.JSON(database.GetRunActivities(myAthlete.ID))
+	runRecord := database.GetRunActivities(myAthlete.ID)
+	runRecordCache.Set(cacheKey, runRecord, 30*time.Minute)
+
+	return context.JSON(runRecord)
 }
 
 // 取得跑步活動圈數

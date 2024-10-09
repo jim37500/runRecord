@@ -14,18 +14,19 @@ type Activity struct {
 }
 
 type RunLap struct {
-	LapID            uint64   `json:"id"`
-	Activity         Activity `json:"activity"`
-	Athlete          Athlete  `json:"athlete"`
-	ElapsedTime      int      `json:"elapsed_time"`
-	MovingTime       int      `json:"moving_time"`
-	Distance         float32  `json:"distance"`
-	AverageSpeed     float32  `json:"average_speed"`
-	MaxSpeed         float32  `json:"max_speed"`
-	AverageCadence   float32  `json:"average_cadence"`
-	AverageHeartrate float32  `json:"average_heartrate"`
-	MaxHeartrate     float32  `json:"max_heartrate"`
-	AverageWatts     float32  `json:"average_watts"`
+	LapID              uint64   `json:"id"`
+	Activity           Activity `json:"activity"`
+	Athlete            Athlete  `json:"athlete"`
+	ElapsedTime        int      `json:"elapsed_time"`
+	MovingTime         int      `json:"moving_time"`
+	Distance           float32  `json:"distance"`
+	AverageSpeed       float32  `json:"average_speed"`
+	MaxSpeed           float32  `json:"max_speed"`
+	AverageCadence     float32  `json:"average_cadence"`
+	AverageHeartrate   float32  `json:"average_heartrate"`
+	MaxHeartrate       float32  `json:"max_heartrate"`
+	AverageWatts       float32  `json:"average_watts"`
+	TotalElevationGain float32  `json:"total_elevation_gain"`
 }
 
 type RunActivities struct {

@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/max-len -->
 <template>
   <div class="min-h-full">
-    <nav class="bg-gray-800 w-full fixed">
+    <nav class="bg-gray-800 w-full fixed z-10">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between">
           <div class="flex items-center">
@@ -124,7 +124,7 @@
 
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue';
-import Menu from './Menu.vue';
+import Menu from './nav-menu.vue';
 
 const { router } = window;
 

@@ -2,3 +2,12 @@
 .fc-daygrid-body {
   width: 100% !important;
 }
+
+.fc-daygrid-event-dot {
+  display: none;
+}
+
+.fc-event-title {
+  padding-right: 2px;
+  text-align: right;
+}

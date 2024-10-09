@@ -36,16 +36,17 @@ type RunActivity struct {
 
 // 跑步圈數
 type RunLap struct {
-	ID               uint64  `gorm:"primarykey"`
-	ActivityID       uint64  `gorm:"comment:活動主鍵"`
-	AthleteID        uint64  `gorm:"comment:運動員主鍵"`
-	ElapsedTime      int     `gorm:"comment:持續時間(秒)"`
-	MovingTime       int     `gorm:"comment:運動時間(秒)"`
-	Distance         int     `gorm:"comment:距離(m)"`
-	AverageSpeed     float32 `gorm:"comment:平均速度(km/h)"`
-	MaxSpeed         float32 `gorm:"comment:最大速度(km/h)"`
-	AverageCadence   int     `gorm:"comment:踏頻(spm)"`
-	AverageHeartrate int     `gorm:"comment:平均心率(bpm)"`
-	MaxHeartrate     int     `gorm:"comment:最大心率(bpm)"`
-	AverageWatts     int     `gorm:"comment:平均功率(bpm)"`
+	ID                 uint64  `gorm:"primarykey"`
+	ActivityID         uint64  `gorm:"comment:活動主鍵"`
+	AthleteID          uint64  `gorm:"comment:運動員主鍵"`
+	ElapsedTime        int     `gorm:"comment:持續時間(秒)"`
+	MovingTime         int     `gorm:"comment:運動時間(秒)"`
+	Distance           int     `gorm:"comment:距離(m)"`
+	AverageSpeed       float32 `gorm:"comment:平均速度(km/h)"`
+	MaxSpeed           float32 `gorm:"comment:最大速度(km/h)"`
+	AverageCadence     int     `gorm:"comment:踏頻(spm)"`
+	AverageHeartrate   int     `gorm:"comment:平均心率(bpm)"`
+	MaxHeartrate       int     `gorm:"comment:最大心率(bpm)"`
+	AverageWatts       int     `gorm:"comment:平均功率(bpm)"`
+	TotalElevationGain int     `gorm:"comment:爬升(cm)"`
 }

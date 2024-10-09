@@ -2,6 +2,9 @@ import './assets/main.css';
 import 'primeicons/primeicons.css';
 
 import { createApp } from 'vue';
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { faPersonRunning } from '@fortawesome/free-solid-svg-icons';
 
 import PrimeVue from 'primevue/config';
 import Aura from '@primevue/themes/aura';
@@ -10,17 +13,18 @@ import * as XLSX from 'xlsx/xlsx.mjs';
 import moment from 'moment';
 import Swal from 'sweetalert2';
 
-import Button from 'primevue/button';
-import FileUpload from 'primevue/fileupload';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import Select from 'primevue/select';
-import Dialog from 'primevue/dialog';
-import DatePicker from 'primevue/datepicker';
-import InputNumber from 'primevue/inputnumber';
-import InputText from 'primevue/inputtext';
-import Menubar from 'primevue/menubar';
-import Tag from 'primevue/tag';
+import Divider from 'primevue/divider';
+// import FileUpload from 'primevue/fileupload';
+// import DataTable from 'primevue/datatable';
+// import Column from 'primevue/column';
+// import Select from 'primevue/select';
+// import SelectButton from 'primevue/selectbutton';
+// import Dialog from 'primevue/dialog';
+// import DatePicker from 'primevue/datepicker';
+// import InputNumber from 'primevue/inputnumber';
+// import InputText from 'primevue/inputtext';
+// import Menubar from 'primevue/menubar';
+// import Tag from 'primevue/tag';
 
 import FullCalendar from '@fullcalendar/vue3';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -32,6 +36,8 @@ import * as echarts from 'echarts';
 
 import App from './App.vue';
 import router from './router';
+
+library.add(faPersonRunning);
 
 const app = createApp(App);
 
@@ -58,18 +64,21 @@ app.use(PrimeVue, {
   },
 });
 
-app.component('Button', Button);
-app.component('FileUpload', FileUpload);
-app.component('DataTable', DataTable);
-app.component('Dialog', Dialog);
-app.component('Select', Select);
+app.component('primevue-divider', Divider);
+// app.component('Button', Button);
+// app.component('SelectButton', SelectButton);
+// app.component('FileUpload', FileUpload);
+// app.component('DataTable', DataTable);
+// app.component('Dialog', Dialog);
+// app.component('Select', Select);
 
-app.component('Column', Column);
-app.component('Tag', Tag);
-app.component('DatePicker', DatePicker);
-app.component('InputNumber', InputNumber);
-app.component('InputText', InputText);
-app.component('Menubar', Menubar);
+// app.component('Column', Column);
+// app.component('Tag', Tag);
+// app.component('DatePicker', DatePicker);
+// app.component('InputNumber', InputNumber);
+// app.component('InputText', InputText);
+// app.component('Menubar', Menubar);
 app.component('FullCalendar', FullCalendar);
+app.component('font-awesome-icon', FontAwesomeIcon);
 
 app.mount('#app');

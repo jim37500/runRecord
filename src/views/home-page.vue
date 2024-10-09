@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col xl:flex-row justify-center mx-auto w-full max-w-7xl mt-36 px-4 sm:px-6 lg:px-10">
+  <div class="flex flex-col xl:flex-row justify-center mx-auto w-full max-w-7xl mt-10 px-4 sm:px-6 lg:px-10">
     <div class="w-full xl:w-6/12 flex flex-col justify-center">
       <div class="text-6xl text-yellow-500 font-semibold">Growth</div>
       <div class="text-3xl font-semibold mt-5 mb-2">每天進步一點</div>
