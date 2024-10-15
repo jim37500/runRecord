@@ -8,7 +8,11 @@ import (
 func AutoMigrate(db *gorm.DB) {
 	migrateTable(db, &Athlete{})
 	migrateTable(db, &RunActivity{})
+	migrateTable(db, &RideActivity{})
+	migrateTable(db, &SwimActivity{})
 	migrateTable(db, &RunLap{})
+	migrateTable(db, &RideLap{})
+	migrateTable(db, &SwimLap{})
 
 	checkTableData(db)
 }

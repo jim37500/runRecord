@@ -8,7 +8,8 @@ const router = createRouter({
       component: () => import('../views/root-page.vue'),
       children: [
         { path: '', name: '', component: () => import('../views/home-page.vue') },
-        { path: 'runrecord', name: '', component: () => import('../views/run-record.vue') },
+        { path: 'activity', name: '', component: () => import('../views/my-activity.vue') },
+        { path: 'activity/:type/:activityid', name: '', component: () => import('../views/activity-detail.vue') },
       ],
     },
   ],

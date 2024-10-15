@@ -73,11 +73,11 @@ func FetchStravaActivities(myAthlete model.Athlete) error {
 		url += fmt.Sprintf("&after=%d", lastRunActivity.Date.Unix())
 	}
 
-	var activities []data.RunActivities
+	var activities []data.Activities
 
 	page := 1
 	for {
-		result, err := FetchStravaApi("GET", fmt.Sprintf("%s&page=%d", url, page), myAthlete.AccessToken, []data.RunActivities{})
+		result, err := FetchStravaApi("GET", fmt.Sprintf("%s&page=%d", url, page), myAthlete.AccessToken, []data.Activities{})
 		if err != nil {
 			accessToken := FetchNewAccessToken(myAthlete)
 
@@ -86,7 +86,7 @@ func FetchStravaActivities(myAthlete model.Athlete) error {
 			}
 
 			myAthlete.AccessToken = accessToken
-			result, err = FetchStravaApi("GET", url, myAthlete.AccessToken, []data.RunActivities{})
+			result, err = FetchStravaApi("GET", url, myAthlete.AccessToken, []data.Activities{})
 			if err != nil {
 				return errors.New("Error fetching strava api")
 			}
@@ -99,31 +99,31 @@ func FetchStravaActivities(myAthlete model.Athlete) error {
 		activities = append(activities, result...)
 	}
 
-	if !database.AddRunActivity(activities) {
-		return errors.New("Error Saving run activities")
+	if !database.AddActivity(activities) {
+		return errors.New("Error Saving activities")
 	}
 
 	return nil
 }
 
-func FetchStravaLaps(myAthlete model.Athlete, activityID string) error {
+func FetchStravaLaps(myAthlete model.Athlete, activityID string, activityType string) error {
 	url := strings.Replace(urlMap["getLapsByActivityId"], "{id}", activityID, 1)
 
-	result, err := FetchStravaApi("GET", url, myAthlete.AccessToken, []data.RunLap{})
+	result, err := FetchStravaApi("GET", url, myAthlete.AccessToken, []data.Lap{})
 	if err != nil {
 		accessToken := FetchNewAccessToken(myAthlete)
 		if accessToken == "" {
 			return errors.New("Invalid AccessToken")
 		}
 
-		result, err = FetchStravaApi("GET", url, accessToken, []data.RunLap{})
+		result, err = FetchStravaApi("GET", url, accessToken, []data.Lap{})
 		if err != nil {
 			return errors.New("Error fetching strava api")
 		}
 	}
 
-	if !database.AddRunLaps(result) {
-		return errors.New("Error Saving run laps error")
+	if !database.AddLaps(result, activityType) {
+		return errors.New("Error Saving laps error")
 	}
 
 	return nil

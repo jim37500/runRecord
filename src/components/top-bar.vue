@@ -12,7 +12,7 @@
               <div class="ml-2 flex items-center space-x-4">
                 <div class="px-3 py-2 font-medium text-2xl cursor-pointer text-yellow-500" @click="DirectToPage('/')" @keydown="() => router.push('/')">Growth</div>
                 <div class="narbar-inactive" id="navbar-home" @click="DirectToPage('/')" @keydown="DirectToPage('/')">首頁</div>
-                <div class="narbar-inactive" id="navbar-runrecord" @click="DirectToPage('/runrecord')" @keydown="DirectToPage('/runrecord')">我的運動</div>
+                <div class="narbar-inactive" id="navbar-activity" @click="DirectToPage('/activity')" @keydown="DirectToPage('/activity')">我的運動</div>
                 <div
                   class="narbar-inactive relative"
                   @mouseover="MenuVisible.ArticleShare = true"
@@ -87,9 +87,23 @@
       <div id="mobile-menu" :class="IsMenuOpen && IsMobile ? 'max-h-screen' : 'max-h-0'" class="overflow-hidden transition-all duration-500 ease-out">
         <div class="space-y-1 px-2 pb-3 pt-2 sm:px-3">
           <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
-          <a href="#" class="block rounded-md bg-gray-900 px-3 py-2 text-base font-medium text-white" aria-current="page">首頁</a>
-          <a href="#" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">我的運動</a>
-          <a href="#" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">文章分享</a>
+          <div
+            id="navbar-home-mobile"
+            class="cursor-pointer block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+            @click="DirectToPage('/')"
+            @keydown="DirectToPage('/')"
+          >
+            首頁
+          </div>
+          <div
+            id="navbar-activity-mobile"
+            class="cursor-pointer block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+            @click="DirectToPage('/activity')"
+            @keydown="DirectToPage('/activity')"
+          >
+            我的運動
+          </div>
+          <div class="cursor-pointer block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">文章分享</div>
           <div v-for="item in ArticleShareItems" :key="item" class="block rounded-md px-3 py-1 ml-4 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white">
             {{ item.Name }}
           </div>
@@ -133,7 +147,7 @@ const ProfileItems = ref([{ Name: '帳號管理' }, { Name: '管理員' }, { Nam
 const MenuVisible = ref({ ArticleShare: false, Profile: false }); // 選單是否顯示(預設皆為否)
 const IsMobile = ref(window.innerWidth < 768); // 是否為手機版
 const IsMenuOpen = ref(false); // 手機版是否打開選單
-const NavbarMap = { '/': 'home', '/runrecord': 'runrecord' }; // 導覽列路徑與id名稱對應
+const NavbarMap = { '/': 'home', '/activity': 'activity' }; // 導覽列路徑與id名稱對應
 const IsClickProfile = ref(false); // 是否點擊帳號頭像
 
 // 為了要點擊帳號頭像時能顯示選單，點擊其他地方會不顯示
@@ -161,10 +175,20 @@ const HandleClickOutside = () => {
 };
 
 const Load = () => {
-  const navbarID = NavbarMap[router.currentRoute.value.path];
+  let navbarID;
+  Object.keys(NavbarMap).forEach((o) => {
+    if (router.currentRoute.value.path.startsWith(o)) {
+      navbarID = NavbarMap[o];
+    }
+  })
+  
   const element = document.querySelector(`#navbar-${navbarID}`);
   element.classList.add('narbar-active');
   element.classList.remove('narbar-inactive');
+
+  const mobileElement = document.querySelector(`#navbar-${navbarID}-mobile`);
+  mobileElement.classList.add('bg-gray-900', 'text-white');
+  mobileElement.classList.remove('text-gray-300', 'hover:bg-gray-700', 'hover:text-white');
 
   document.addEventListener('click', HandleClickOutside);
 };
@@ -173,16 +197,23 @@ const Load = () => {
 const DirectToPage = (path) => {
   Object.keys(NavbarMap).forEach((o) => {
     const element = document.querySelector(`#navbar-${NavbarMap[o]}`);
+    const mobileElement = document.querySelector(`#navbar-${NavbarMap[o]}-mobile`);
+
     if (o === path) {
       element.classList.remove('narbar-inactive');
       element.classList.add('narbar-active');
+      mobileElement.classList.add('bg-gray-900', 'text-white');
+      mobileElement.classList.remove('text-gray-300', 'hover:bg-gray-700', 'hover:text-white');
       return;
     }
 
     element.classList.remove('narbar-active');
     element.classList.add('narbar-inactive');
+    mobileElement.classList.remove('bg-gray-900', 'text-white');
+    mobileElement.classList.add('text-gray-300', 'hover:bg-gray-700', 'hover:text-white');
   });
 
+  IsMenuOpen.value = false;
   router.push(`${path}`);
 };
 
