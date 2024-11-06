@@ -9,7 +9,12 @@
       </div>
     </div>
     <div class="w-full xl:w-6/12 mt-10 xl:mt-0 grid grid-cols-1 sm:grid-cols-2 gap-8">
-      <div v-for="item in HeroItems" :key="item" class="bg-zinc-50 border-2 border-zinc-100 px-8 py-8 h-72 rounded-2xl hover:bg-blue-50 hover:border-blue-200 shadow-md cursor-pointer">
+      <div
+        v-for="item in HeroItems"
+        :key="item"
+        class="bg-zinc-50 border-2 border-zinc-100 px-8 py-8 h-72 rounded-2xl hover:bg-blue-50 hover:border-blue-200 shadow-md cursor-pointer"
+        @click="router.push(item.Path)"
+      >
         <div class="w-12 h-12 flex justify-center items-center rounded-md" :class="item.IconBgColor">
           <i :class="item.IconClass" style="font-size: 1.875rem; color: white" />
         </div>
@@ -23,30 +28,35 @@
 <script setup>
 import { ref } from 'vue';
 
+const { router } = window;
 const HeroItems = ref([
   {
     IconClass: 'pi pi-map-marker',
     IconBgColor: 'bg-sky-700',
     Title: '運動紀錄',
     Content: '連動Strava追蹤，讓你能掌握自己的運動狀況與規劃訓練表。',
+    Path: 'activity',
   },
   {
     IconClass: 'pi pi-pencil',
     IconBgColor: 'bg-lime-700',
     Title: '運動筆記',
     Content: '包含游泳、自行車及跑步，馬拉松與鐵人賽事準備。',
+    Path: '',
   },
   {
     IconClass: 'pi pi-code',
     IconBgColor: 'bg-yellow-700',
     Title: '程式筆記',
     Content: '程式小白自學筆記，從軟體前後端必讀知識點，到資料結構與演算法。',
+    Path: '',
   },
   {
     IconClass: 'pi pi-book',
     IconBgColor: 'bg-pink-700',
     Title: '閱讀筆記',
     Content: '日常閱讀筆記，包含如何提升生產力、提高學習效果。',
+    Path: '',
   },
 ]);
 </script>

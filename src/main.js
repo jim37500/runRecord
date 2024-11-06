@@ -13,13 +13,14 @@ import { definePreset } from '@primevue/themes';
 import * as XLSX from 'xlsx/xlsx.mjs';
 import moment from 'moment';
 import Swal from 'sweetalert2';
+import mitt from 'mitt';
 
 import Divider from 'primevue/divider';
 import Paginator from 'primevue/paginator';
 import InputGroup from 'primevue/inputgroup';
 // import FileUpload from 'primevue/fileupload';
-// import DataTable from 'primevue/datatable';
-// import Column from 'primevue/column';
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
 // import Select from 'primevue/select';
 import SelectButton from 'primevue/selectbutton';
 import Button from 'primevue/button';
@@ -72,6 +73,7 @@ window.timeGridPlugin = timeGridPlugin;
 window.listPlugin = listPlugin;
 window.interactionPlugin = interactionPlugin;
 window.echarts = echarts;
+window.emitter = mitt();
 
 app.use(router);
 app.use(PrimeVue, {
@@ -92,11 +94,11 @@ app.component('primevue-button', Button);
 app.component('primevue-select-button', SelectButton);
 app.component('primevue-input-group', InputGroup);
 // app.component('FileUpload', FileUpload);
-// app.component('DataTable', DataTable);
+app.component('primevue-data-table', DataTable);
 // app.component('Dialog', Dialog);
 // app.component('Select', Select);
 
-// app.component('Column', Column);
+app.component('primevue-column', Column);
 // app.component('Tag', Tag);
 // app.component('DatePicker', DatePicker);
 // app.component('InputNumber', InputNumber);

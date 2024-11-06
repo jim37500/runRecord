@@ -46,4 +46,5 @@ type Activities struct {
 	MaxHeartrate       float32 `json:"max_heartrate"`
 	AverageWatts       float32 `json:"average_watts"`
 	MaxWatts           float32 `json:"max_watts"`
+	AverageTemperature int     `json:"average_temp"`
 }

@@ -67,10 +67,10 @@ func FetchNewAccessToken(myAthlete model.Athlete) string {
 func FetchStravaActivities(myAthlete model.Athlete) error {
 	url := urlMap["getLoggedInAthleteActivities"]
 
-	lastRunActivity := database.GetLatestRunActivity(uint64(myAthlete.ID)) // 取得運動員最近一次的跑步活動
+	lastActivityDate := database.GetLatestActivityDate(uint64(myAthlete.ID)) // 取得運動員最近一次的跑步活動日期
 	// 若 有最後一次跑步活動 則 爬取這之後的活動
-	if lastRunActivity.ID != 0 {
-		url += fmt.Sprintf("&after=%d", lastRunActivity.Date.Unix())
+	if lastActivityDate.Unix() > 0 {
+		url += fmt.Sprintf("&after=%d", lastActivityDate.Unix())
 	}
 
 	var activities []data.Activities
@@ -106,7 +106,7 @@ func FetchStravaActivities(myAthlete model.Athlete) error {
 	return nil
 }
 
-func FetchStravaLaps(myAthlete model.Athlete, activityID string, activityType string) error {
+func FetchStravaLaps(myAthlete model.Athlete, activityID string) error {
 	url := strings.Replace(urlMap["getLapsByActivityId"], "{id}", activityID, 1)
 
 	result, err := FetchStravaApi("GET", url, myAthlete.AccessToken, []data.Lap{})
@@ -122,7 +122,7 @@ func FetchStravaLaps(myAthlete model.Athlete, activityID string, activityType st
 		}
 	}
 
-	if !database.AddLaps(result, activityType) {
+	if !database.AddLaps(result) {
 		return errors.New("Error Saving laps error")
 	}
 

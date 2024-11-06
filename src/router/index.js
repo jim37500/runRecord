@@ -9,7 +9,7 @@ const router = createRouter({
       children: [
         { path: '', name: '', component: () => import('../views/home-page.vue') },
         { path: 'activity', name: '', component: () => import('../views/my-activity.vue') },
-        { path: 'activity/:type/:activityid', name: '', component: () => import('../views/activity-detail.vue') },
+        { path: 'activity/:activityid', name: '', component: () => import('../views/activity-detail.vue') },
       ],
     },
   ],
