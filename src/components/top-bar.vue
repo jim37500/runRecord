@@ -5,7 +5,7 @@
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between">
           <div class="flex items-center">
-            <div class="flex-shrink-0">
+            <div class="flex-shrink-0 cursor-pointer" @click="DirectToPage('/')">
               <img class="size-10 rounded-full" src="/images/JimAndy.png" alt="Your Company" />
             </div>
             <div class="hidden md:block">
@@ -180,8 +180,8 @@ const Load = () => {
     if (router.currentRoute.value.path.startsWith(o)) {
       navbarID = NavbarMap[o];
     }
-  })
-  
+  });
+
   const element = document.querySelector(`#navbar-${navbarID}`);
   element.classList.add('narbar-active');
   element.classList.remove('narbar-inactive');

@@ -1,10 +1,14 @@
 import './assets/main.css';
 import 'primeicons/primeicons.css';
+import 'leaflet/dist/leaflet.css';
+import 'nprogress/nprogress.css';
 
 import { createApp } from 'vue';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faPersonRunning, faPersonBiking, faPersonSwimming, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
+import { LMap, LGeoJson, LTileLayer, LPolyline } from '@vue-leaflet/vue-leaflet';
+import leaflet from 'leaflet';
 
 import PrimeVue from 'primevue/config';
 import Aura from '@primevue/themes/aura';
@@ -14,6 +18,7 @@ import * as XLSX from 'xlsx/xlsx.mjs';
 import moment from 'moment';
 import Swal from 'sweetalert2';
 import mitt from 'mitt';
+import polyline from '@mapbox/polyline';
 
 import Divider from 'primevue/divider';
 import Paginator from 'primevue/paginator';
@@ -74,6 +79,8 @@ window.listPlugin = listPlugin;
 window.interactionPlugin = interactionPlugin;
 window.echarts = echarts;
 window.emitter = mitt();
+window.polyline = polyline;
+window.leaflet = leaflet;
 
 app.use(router);
 app.use(PrimeVue, {
@@ -106,5 +113,10 @@ app.component('primevue-input-text', InputText);
 // app.component('Menubar', Menubar);
 app.component('FullCalendar', FullCalendar);
 app.component('font-awesome-icon', FontAwesomeIcon);
+
+app.component('l-map', LMap);
+app.component('l-tile-layer', LTileLayer);
+app.component('l-geo-json', LGeoJson);
+app.component('l-poly-line', LPolyline);
 
 app.mount('#app');

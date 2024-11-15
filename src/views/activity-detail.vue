@@ -6,7 +6,7 @@
     <h2 class="text-3xl md:text-4xl font-semibold text-center text-blue-800">
       {{ ActivityData.Name }}
     </h2>
-    <div class="w-full grid grid-cols-1 xl:grid-cols-2 gap-8 p-8">
+    <div class="w-full grid grid-cols-1 xl:grid-cols-2 gap-8 px-2 py-8 sm:p-8">
       <div class="xl:col-span-2 bg-zinc-50 border-2 border-zinc-100 px-8 py-8 rounded-2xl z-0">
         <div class="font-semibold text-2xl">詳細資料</div>
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-5 ml-3">
@@ -37,7 +37,9 @@
           <div v-if="ActivityData.MaxWatts" class="font-semibold text-lg">最大功率： {{ ActivityData.MaxWatts }} W</div>
         </div>
       </div>
-
+      <div class="xl:col-span-2 bg-zinc-50 border-2 border-zinc-100 p-3 rounded-2xl z-0">
+        <LeafletMap v-if="ActivityData.Polyline" :Polyline="ActivityData.Polyline" :IsLongDistance="ActivityData.SportType === 'Ride'" />
+      </div>
       <div class="xl:col-span-2 bg-zinc-50 border-2 border-zinc-100 px-8 py-8 rounded-2xl z-0">
         <primevue-data-table :value="ActivityData.Laps" tableClass="border-zinc-900" :pt="{ tableContainer: { class: '!rounded-lg' } }">
           <template #empty>找不到資料!</template>
@@ -91,16 +93,16 @@
           </primevue-column>
         </primevue-data-table>
       </div>
-      <div class="bg-zinc-50 border-2 border-zinc-100 p-2 sm:p-8 rounded-2xl z-0">
+      <div class="bg-zinc-50 border-2 border-zinc-100 p-1 sm:p-8 rounded-2xl z-0">
         <ECharts :ChartOptions="ChartSpeedOptions" />
       </div>
-      <div class="bg-zinc-50 border-2 border-zinc-100 p-2 sm:p-8 rounded-2xl z-0">
+      <div class="bg-zinc-50 border-2 border-zinc-100 p-1 sm:p-8 rounded-2xl z-0">
         <ECharts :ChartOptions="ChartHeartrateOptions" />
       </div>
-      <div v-if="ActivityData.AverageCadence" class="bg-zinc-50 border-2 border-zinc-100 p-2 sm:p-8 rounded-2xl z-0">
+      <div v-if="ActivityData.AverageCadence" class="bg-zinc-50 border-2 border-zinc-100 p-1 sm:p-8 rounded-2xl z-0">
         <ECharts :ChartOptions="ChartCadenceOptions" />
       </div>
-      <div v-if="ActivityData.AverageWatts" class="bg-zinc-50 border-2 border-zinc-100 p-2 sm:p-8 rounded-2xl z-0">
+      <div v-if="ActivityData.AverageWatts" class="bg-zinc-50 border-2 border-zinc-100 p-1 sm:p-8 rounded-2xl z-0">
         <ECharts :ChartOptions="ChartPowerOptions" />
       </div>
     </div>
@@ -110,20 +112,24 @@
 <script setup>
 import { onBeforeUnmount, ref } from 'vue';
 import ECharts from '../components/e-charts.vue';
+import LeafletMap from '../components/leaflet-map.vue';
 import ActivityService from '../services/ActivityService';
 
 const { moment } = window; // 時間格式
 const IsLoading = ref(false); // 是否在載入中
 const ActivityData = ref({}); // 活動資料
+// const Zoom = ref(2);
 
 // 座標時間格式
-const timeFormatter = (o) => ActivityService.CalculateTime(o); 
+const timeFormatter = (o) => ActivityService.CalculateTime(o);
 // 座標速度格式
 const speedFormatter = (o) => ActivityService.CalculateSpeed(o, ActivityData.value.SportType);
 // 鼠標速度格式
-const tooltipSpeedFormatter = (o) => `(${ActivityService.CalculateTime(o.value[0])}, ${ActivityService.CalculateSpeed(o.value[1], ActivityData.value.SportType)})`; 
+const tooltipSpeedFormatter = (o) => `(${ActivityService.CalculateTime(o.value[0])}, ${ActivityService.CalculateSpeed(o.value[1], ActivityData.value.SportType)})`;
+// 其他鼠標格式
+const tooltipOthersFormatter = (o) => `(${ActivityService.CalculateTime(o.value[0])}, ${o.value[1]})`;
 // 決定速度圖表Y軸名稱
-const determineSpeedYAxisName = (type) => `${type === 'Ride' ? '平均速度' : '平均配速'} (${ActivityService.SportTypes[type].Unit})`; 
+const determineSpeedYAxisName = (type) => `${type === 'Ride' ? '平均速度' : '平均配速'} (${ActivityService.SportTypes[type].Unit})`;
 // 圖表速度選項
 const ChartSpeedOptions = {
   grid: {
@@ -168,7 +174,7 @@ const ChartHeartrateOptions = {
     bottom: 90, // 增加以防會跟X軸名重疊
   },
   tooltip: {
-    formatter: tooltipSpeedFormatter,
+    formatter: tooltipOthersFormatter,
   },
   xAxis: {
     type: 'value',
@@ -208,7 +214,7 @@ const ChartCadenceOptions = {
     bottom: 90, // 增加以防會跟X軸名重疊
   },
   tooltip: {
-    formatter: tooltipSpeedFormatter,
+    formatter: tooltipOthersFormatter,
   },
   xAxis: {
     type: 'value',
@@ -248,7 +254,7 @@ const ChartPowerOptions = {
     bottom: 90, // 增加以防會跟X軸名重疊
   },
   tooltip: {
-    formatter: tooltipSpeedFormatter,
+    formatter: tooltipOthersFormatter,
   },
   xAxis: {
     type: 'value',

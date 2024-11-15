@@ -62,6 +62,7 @@ func AddActivity(activities []data.Activities) bool {
 			AverageWatts:       int(math.Round(float64(actitvity.AverageWatts))),
 			MaxWatts:           int(math.Round(float64(actitvity.MaxWatts))),
 			AverageTemperature: actitvity.AverageTemperature,
+			Polyline:           actitvity.RouteMap.Polyline,
 		})
 	}
 

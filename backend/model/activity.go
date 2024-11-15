@@ -23,7 +23,8 @@ type Activity struct {
 	AverageWatts       int       `gorm:"comment:平均功率(bpm)"`
 	MaxWatts           int       `gorm:"comment:最大功率(bpm)"`
 	AverageTemperature int       `gorm:"comment:平均溫度(°C)"`
-	Laps                []Lap     `gorm:"foreignKey:ActivityID"`
+	Polyline           string    `gorm:"comment:路線"`
+	Laps               []Lap     `gorm:"foreignKey:ActivityID"`
 }
 
 // 跑步圈數

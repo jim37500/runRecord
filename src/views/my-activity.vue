@@ -26,7 +26,7 @@
                 v-if="item.Value !== 'All'"
                 type="button"
                 class="px-1 sm:px-3 py-1 mx-0.5 rounded font-semibold sm:text-lg text-white hover:bg-sky-600 transition-colors"
-                :class="ChartSportType.Value === item.Value ? 'bg-sky-600' : ''"
+                :class="ChartSportType.some((type) => type.Value === item.Value) ? 'bg-sky-600' : ''"
                 @click="ChangeChartSportType(item)"
               >
                 {{ item.Name }}
@@ -38,7 +38,9 @@
           <i class="pi pi-spin pi-spinner" style="font-size: 2rem" />
         </div>
         <div v-else class="flex flex-col flex-1 px-3 pb-3 sm:px-8 justify-center items-center">
-          <div class="font-semibold text-2xl mb-2 mt-3 sm:mb-0">{{ ChartSportType.Name }}統計: {{ Statistics }} km</div>
+          <div class="font-semibold md:text-2xl mb-2 mt-3 sm:mb-0">
+            {{ StatisticsOverview }}
+          </div>
           <ECharts :ChartOptions="ChartOption" />
           <div class="w-full flex justify-center">
             <div>
@@ -105,7 +107,10 @@
                 <div>
                   <p v-if="item.SportType === 'Ride'">速度</p>
                   <p v-else>配速</p>
-                  <p class="font-semibold">{{ ActivityService.CalculateSpeed(item.AverageSpeed, item.SportType) }} {{ ActivityService.SportTypes[item.SportType].Unit }}</p>
+                  <p class="font-semibold">
+                    {{ ActivityService.CalculateSpeed(item.AverageSpeed, item.SportType) }}
+                    {{ ActivityService.SportTypes[item.SportType].Unit }}
+                  </p>
                 </div>
                 <primevue-divider layout="vertical" />
                 <div>
@@ -131,7 +136,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, onBeforeUnmount } from 'vue';
+import { ref, reactive, watch, onBeforeUnmount, computed } from 'vue';
 import ECharts from '../components/e-charts.vue';
 import ActivityService from '../services/ActivityService';
 // import UtilityService from '../services/UtilityService';
@@ -144,7 +149,7 @@ const FilteredData = ref([]); // 篩選過的資料
 const RecentData = ref([]); // 近期資料
 const NowDisplayTime = ref(''); // 現在顯示時間
 const NowTime = ref(new Date()); // 現在時間
-const Statistics = ref(0); // 跑量統計
+const StatisticsOverview = ref(''); // 運動統計概覽
 const Keyword = ref(''); // 關鍵字
 
 const TimeTypes = ref([
@@ -154,19 +159,40 @@ const TimeTypes = ref([
 ]);
 const NowTimeType = ref(TimeTypes.value[0].Value); // 現在時間統計類別
 const SportTypes = ref([{ Name: '全部', Value: 'All', Icon: '' }, ...Object.values(ActivityService.SportTypes)]);
-const ChartSportType = ref(SportTypes.value[1]); // 圖表運動類別
-const RecentSportType = ref(SportTypes.value[0]); // 目前運動類別
-
-// 統計圖表Y軸最大值
-const ChartYMaxValue = {
-  Run: { Week: 40, Year: 500, WeekAdd: 10, YearAdd: 100 },
-  Ride: { Week: 200, Year: 1000, WeekAdd: 100, YearAdd: 1000 },
-  Swim: { Week: 4, Year: 10, WeekAdd: 1, YearAdd: 2 },
-};
+const ChartSportType = ref(SportTypes.value.slice(1)); // 圖表運動類別
+const RecentSportType = ref(SportTypes.value[0]); // 近期運動類別
 
 const setTooltipFormatter = (o) => (o[0].value ? `<div class="font-semibold">${o[0].axisValue}</div> 🏃 ${o[0].value}K` : '');
 
 const setLabelFormatter = (o) => (o.data ? `${o.data}` : '');
+
+// Add this computed property
+const legendStyle = computed(() => {
+  const isMobile = window.innerWidth < 640; // sm breakpoint in Tailwind
+  return {
+    fontSize: isMobile ? 12 : 16,
+    fontWeight: 'bold',
+  };
+});
+
+// Add this computed property for legend layout
+const legendConfig = computed(() => {
+  const isMobile = window.innerWidth < 640;
+  return {
+    show: true,
+    formatter: (name) => {
+      const series = ChartOption.series.find(s => s.name === name);
+      if (!series) return name;
+      const total = series.data.reduce((sum, val) => sum + (val || 0), 0);
+      return `${name}: ${total.toFixed(1)}K`;
+    },
+    textStyle: legendStyle.value,
+    itemWidth: isMobile ? 18 : 25,
+    itemHeight: isMobile ? 10 : 14,
+    itemGap: isMobile ? 15 : 25,
+    padding: isMobile ? [10, 15] : [15, 20],
+  };
+});
 
 const ChartOption = {
   tooltip: {
@@ -176,6 +202,7 @@ const ChartOption = {
       type: 'shadow',
     },
   },
+  legend: legendConfig.value,
   xAxis: {
     type: 'category',
     data: [],
@@ -185,8 +212,32 @@ const ChartOption = {
   },
   series: [
     {
+      name: '跑步',
       data: [],
       type: 'bar',
+      stack: 'total',
+      label: {
+        show: true,
+        position: 'inside',
+        formatter: setLabelFormatter,
+      },
+    },
+    {
+      name: '騎車',
+      data: [],
+      type: 'bar',
+      stack: 'total',
+      label: {
+        show: true,
+        position: 'inside',
+        formatter: setLabelFormatter,
+      },
+    },
+    {
+      name: '游泳',
+      data: [],
+      type: 'bar',
+      stack: 'total',
       label: {
         show: true,
         position: 'inside',
@@ -204,91 +255,96 @@ const getDateDetail = (dateTime) => ({
   Weekday: dateTime.getDay() ? dateTime.getDay() : 7,
 });
 
-// 設置顯示時間內的資料
-const setDisplayTimeData = () => {
-  ChartOption.yAxis.max = ChartYMaxValue[ChartSportType.value.Value][NowTimeType.value];
-  if (NowTimeType.value === 'Week') {
-    const weekday = NowTime.value.getDay();
-    const monday = moment(NowTime.value)
-      .subtract(weekday - 1, 'days')
-      .format('YYYY/MM/DD');
+const calculateWeeklyData = () => {
+  const weekday = NowTime.value.getDay() ? NowTime.value.getDay() : 7;
+  const monday = moment(NowTime.value)
+    .subtract(weekday - 1, 'days')
+    .format('YYYY/MM/DD');
 
-    const sunday = moment(NowTime.value)
-      .add(8 - weekday, 'days')
-      .format('YYYY/MM/DD');
+  // 星期日 24:00
+  const sunday = moment(NowTime.value)
+    .add(8 - weekday, 'days')
+    .format('YYYY/MM/DD');
 
-    ChartOption.xAxis.data = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  ChartOption.xAxis.data = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  StatisticsOverview.value = '';
+  const sportTypeStatistics = [];
+  ChartSportType.value.forEach((sportType) => {
     const data = Array(7).fill(0);
-    const weeklyData = Activities.value.filter((o) => o.SportType === ChartSportType.value.Value && new Date(o.Date) >= new Date(monday) && new Date(o.Date) <= new Date(sunday));
-
-    Statistics.value = 0;
+    const weeklyData = Activities.value.filter((o) => o.SportType === sportType.Value && new Date(o.Date) >= new Date(monday) && new Date(o.Date) <= new Date(sunday));
+    // 計算圖表資料
     weeklyData.forEach((o) => {
-      const nowDate = getDateDetail(new Date(o.Date));
+      const nowDate = getDateDetail(new Date(o.Date)); // 取得日期細節
       const nowDistance = ActivityService.CalculateDistance(o.Distance);
       data[nowDate.Weekday - 1] = Math.round((nowDistance + data[nowDate.Weekday - 1]) * 10) / 10;
-      while (data[nowDate.Weekday - 1] >= ChartOption.yAxis.max) {
-        ChartOption.yAxis.max += ChartYMaxValue[ChartSportType.value.Value].WeekAdd;
-      }
-      Statistics.value += nowDistance;
     });
+    ChartOption.series.find((o) => o.name === sportType.Name).data = data;
+  });
+  StatisticsOverview.value = sportTypeStatistics.join(' | ');
 
-    Statistics.value = Math.round(Statistics.value * 10) / 10;
+  NowDisplayTime.value = `${monday} ~ ${moment(NowTime.value)
+    .add(7 - weekday, 'days')
+    .format('YYYY/MM/DD')}`;
+};
 
-    ChartOption.series[0].data = data;
-    NowDisplayTime.value = `${monday} ~ ${moment(NowTime.value)
-      .add(7 - weekday, 'days')
-      .format('YYYY/MM/DD')}`;
+const calculateMonthlyData = () => {
+  const year = NowTime.value.getFullYear();
+  const month = NowTime.value.getMonth() + 1;
+  const monthDays = new Date(year, month, 0).getDate();
 
-    return;
+  ChartOption.xAxis.data = [];
+  for (let i = 1; i <= monthDays; i += 1) {
+    ChartOption.xAxis.data.push(`${i}`);
   }
 
-  const year = NowTime.value.getFullYear();
-  if (NowTimeType.value === 'Month') {
-    const month = NowTime.value.getMonth() + 1;
-    const monthDays = new Date(year, month, 0).getDate();
-    const monthlyData = Activities.value.filter(
-      (o) => o.SportType === ChartSportType.value.Value && new Date(o.Date) >= new Date(year, month - 1, 1) && new Date(o.Date) <= new Date(year, month - 1, monthDays),
-    );
+  ChartSportType.value.forEach((sportType) => {
     const data = Array(monthDays).fill(0);
-    ChartOption.xAxis.data = [];
-
-    for (let i = 1; i <= monthDays; i += 1) {
-      ChartOption.xAxis.data.push(`${i}`);
-    }
-
-    Statistics.value = 0;
+    const monthlyData = Activities.value.filter((o) => o.SportType === sportType.Value && new Date(o.Date) >= new Date(year, month - 1, 1) && new Date(o.Date) <= new Date(year, month - 1, monthDays));
     monthlyData.forEach((o) => {
       const nowDate = getDateDetail(new Date(o.Date));
       const nowDistance = ActivityService.CalculateDistance(o.Distance);
       data[nowDate.Date - 1] = Math.round((data[nowDate.Date - 1] + nowDistance) * 10) / 10;
-      while (data[nowDate.Date - 1] >= ChartOption.yAxis.max) {
-        ChartOption.yAxis.max += ChartYMaxValue[ChartSportType.value.Value].WeekAdd;
-      }
-      Statistics.value += nowDistance;
     });
+    ChartOption.series.find((o) => o.name === sportType.Name).data = data;
+  });
 
-    ChartOption.series[0].data = data;
-    Statistics.value = Math.round(Statistics.value * 10) / 10;
-    NowDisplayTime.value = `${year}年${month}月`;
-  } else {
-    ChartOption.xAxis.data = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const yearlyData = Activities.value.filter((o) => o.SportType === ChartSportType.value.Value && new Date(o.Date) >= new Date(year, 0, 1) && new Date(o.Date) <= new Date(year + 1, 0, 1));
+  NowDisplayTime.value = `${year}年${month}月`;
+};
+
+const calculateYearlyData = () => {
+  const year = NowTime.value.getFullYear();
+  ChartOption.xAxis.data = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  ChartSportType.value.forEach((sportType) => {
+    const yearlyData = Activities.value.filter((o) => o.SportType === sportType.Value && new Date(o.Date) >= new Date(year, 0, 1) && new Date(o.Date) <= new Date(year + 1, 0, 1));
     const data = Array(12).fill(0);
 
-    Statistics.value = 0;
     yearlyData.forEach((o) => {
       const nowDate = getDateDetail(new Date(o.Date));
       const nowDistance = ActivityService.CalculateDistance(o.Distance);
       data[nowDate.Month - 1] = Math.round((data[nowDate.Month - 1] + nowDistance) * 10) / 10;
-      while (data[nowDate.Month - 1] >= ChartOption.yAxis.max) {
-        ChartOption.yAxis.max += ChartYMaxValue[ChartSportType.value.Value].WeekAdd;
-      }
-      Statistics.value += nowDistance;
     });
+    ChartOption.series.find((o) => o.name === sportType.Name).data = data;
+  });
 
-    ChartOption.series[0].data = data;
-    Statistics.value = Math.round(Statistics.value * 10) / 10;
-    NowDisplayTime.value = `${year}年`;
+  NowDisplayTime.value = `${year}年`;
+};
+
+// 設置顯示時間內的資料
+const setDisplayTimeData = () => {
+  // 清空圖表資料
+  ChartOption.series.forEach((o) => {
+    o.data = [];
+  });
+  // 設置圖表Y軸最大值
+  // ChartOption.yAxis.max = ChartYMaxValue[ChartSportType.value.Value][NowTimeType.value];
+  // 計算圖表資料
+  if (NowTimeType.value === 'Week') {
+    calculateWeeklyData();
+  } else if (NowTimeType.value === 'Month') {
+    calculateMonthlyData();
+  } else {
+    calculateYearlyData();
   }
 };
 
@@ -300,7 +356,16 @@ const RerenderECharts = () => {
 
 // 變換圖表運動類型
 const ChangeChartSportType = (sportType) => {
-  ChartSportType.value = sportType;
+  const index = ChartSportType.value.findIndex((type) => type.Value === sportType.Value);
+  if (index === -1) {
+    ChartSportType.value.push(sportType);
+  } else {
+    ChartSportType.value.splice(index, 1);
+  }
+  // Prevent deselecting all sports
+  if (ChartSportType.value.length === 0) {
+    ChartSportType.value.push(sportType);
+  }
   RerenderECharts();
 };
 
@@ -413,13 +478,17 @@ const ChangeTime = (duration) => {
   RerenderECharts();
 };
 
+// Add resize handler to update legend when window size changes
 const ResizeChart = () => {
+  ChartOption.legend = legendConfig.value;
   window.emitter.emit('ResizeChart');
 };
 
 window.addEventListener('resize', ResizeChart);
 
-onBeforeUnmount(() => window.removeEventListener('resize', ResizeChart));
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', ResizeChart);
+});
 </script>
 
 <style>
