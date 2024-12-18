@@ -71,11 +71,11 @@
               <span class="absolute -inset-0.5" />
               <span class="sr-only">Open main menu</span>
               <!-- Menu open: "hidden", Menu closed: "block" -->
-              <svg class="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+              <svg class="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
               </svg>
               <!-- Menu open: "block", Menu closed: "hidden" -->
-              <svg class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+              <svg class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -113,20 +113,13 @@
             <div class="rounded-full h-10 w-10 ring-2 ring-white flex justify-center items-center">
               <i class="pi pi-user text-white" style="font-size: 2rem" />
             </div>
-            <!-- <div class="flex-shrink-0">
-              <img
-                class="h-10 w-10 rounded-full"
-                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                alt=""
-              />
-            </div> -->
             <div class="ml-3">
-              <div class="text-base font-medium leading-none text-white">Tom Cook</div>
-              <div class="text-sm font-medium leading-none text-gray-400">tom@example.com</div>
+              <div class="text-base font-medium leading-none text-white">{{ User.ID ? User.Name : '未登入' }}</div>
+              <div v-if="User.ID" class="text-sm font-medium leading-none text-gray-400">{{ User.Email }}</div>
             </div>
           </div>
           <div class="mt-3 space-y-1 px-2">
-            <div v-for="item in ProfileItems" :key="item" class="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white">
+            <div v-for="item in ProfileItems" :key="item" class="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white" @click="ClickProfileItems(item)">
               {{ item.Name }}
             </div>
           </div>
@@ -137,18 +130,32 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import Menu from './nav-menu.vue';
+import { loginStore } from '../stores/LoginStore';
+import { storeToRefs } from 'pinia';
+
+import UserService from '../services/UserService';
+import UtilityService from '../services/UtilityService';
+
+const { Alert, Confirm } = UtilityService;
+const store = loginStore();
 
 const { router } = window;
 
+const User = ref(UserService.User); // 使用者資訊
+const { IsLoggedIn } = storeToRefs(store);
+
 const ArticleShareItems = ref([{ Name: '運動筆記' }, { Name: '程式筆記' }, { Name: '閱讀筆記' }]); // 文章分享選單內容
-const ProfileItems = ref([{ Name: '帳號管理' }, { Name: '管理員' }, { Name: '登出' }]); // 帳號選單內容
 const MenuVisible = ref({ ArticleShare: false, Profile: false }); // 選單是否顯示(預設皆為否)
 const IsMobile = ref(window.innerWidth < 768); // 是否為手機版
 const IsMenuOpen = ref(false); // 手機版是否打開選單
 const NavbarMap = { '/': 'home', '/activity': 'activity' }; // 導覽列路徑與id名稱對應
 const IsClickProfile = ref(false); // 是否點擊帳號頭像
+
+const ProfileLoginItems = [{ Name: '帳號管理' }, { Name: '授權Strava', Action: 'connect_strava' }, { Name: '管理員', Path: 'admin/article' }, { Name: '登出', Action: 'logout' }]; // 登入後帳號選單內容
+const ProfileNotLoginItems = [{ Name: '登入', Action: 'login' }]; // 登入前帳號選單內容
+const ProfileItems = ref(ProfileLoginItems); // 帳號選單內容
 
 // 為了要點擊帳號頭像時能顯示選單，點擊其他地方會不顯示
 // 點擊帳號頭像
@@ -175,6 +182,9 @@ const HandleClickOutside = () => {
 };
 
 const Load = () => {
+  User.value = UserService.User;
+  ProfileItems.value = IsLoggedIn.value ? ProfileLoginItems : ProfileNotLoginItems;
+
   let navbarID;
   Object.keys(NavbarMap).forEach((o) => {
     if (router.currentRoute.value.path.startsWith(o)) {
@@ -216,6 +226,34 @@ const DirectToPage = (path) => {
   IsMenuOpen.value = false;
   router.push(`${path}`);
 };
+
+const ClickProfileItems = (item) => {
+  if (item.Path) {
+    window.router.push(item.Path);
+  }
+  if (item.Action === 'login') {
+    store.OpenLoginDialog();
+  } else if (item.Action === 'logout') {
+    Confirm('確定要登出？').then((o) => {
+      if (!o.isConfirmed) return;
+
+      store.logout();
+      Alert('已經登出', 'info');
+    });
+  } else if (item.Action === 'connect_strava') {
+    store.OpenStravaDialog();
+  }
+
+  IsMenuOpen.value = false;
+};
+
+// Add watcher for auth state changes
+watch(
+  () => IsLoggedIn.value,
+  () => {
+    Load(); // Reload component data when auth state changes
+  },
+);
 
 onMounted(() => Load());
 

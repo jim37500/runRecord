@@ -5,7 +5,14 @@
       <div class="text-3xl font-semibold mt-5 mb-2">每天進步一點</div>
       <div class="text-3xl font-semibold">五年十年後大不同</div>
       <div class="mt-5">
-        <button type="button" class="rounded-lg font-semibold text-white text-lg px-6 py-2 bg-sky-700 hover:bg-sky-500 active:bg-sky-700">登入</button>
+        <button
+          v-if="!IsLoggedIn"
+          type="button"
+          class="rounded-lg font-semibold text-white text-lg px-6 py-2 bg-sky-700 hover:bg-sky-500 active:bg-sky-700"
+          @click="store.OpenLoginDialog()"
+        >
+          登入
+        </button>
       </div>
     </div>
     <div class="w-full xl:w-6/12 mt-10 xl:mt-0 grid grid-cols-1 sm:grid-cols-2 gap-8">
@@ -27,8 +34,12 @@
 
 <script setup>
 import { ref } from 'vue';
+import { loginStore } from '../stores/LoginStore';
+import { storeToRefs } from 'pinia';
 
+const store = loginStore();
 const { router } = window;
+const { IsLoggedIn } = storeToRefs(store);
 const HeroItems = ref([
   {
     IconClass: 'pi pi-map-marker',

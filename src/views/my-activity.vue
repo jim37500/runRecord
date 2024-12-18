@@ -12,7 +12,7 @@
               v-for="item in TimeTypes"
               :key="item"
               type="button"
-              class="px-3 py-1 mx-0.5 rounded font-semibold sm:text-lg text-white hover:bg-sky-600 transition-colors"
+              class="px-3 py-1 mx-0.5 rounded font-semibold sm:text-lg text-white hover:bg-sky-500 transition-colors"
               :class="NowTimeType === item.Value ? 'bg-sky-600' : ''"
               @click="ChangeTimeType(item.Value)"
             >
@@ -25,7 +25,7 @@
               <button
                 v-if="item.Value !== 'All'"
                 type="button"
-                class="px-1 sm:px-3 py-1 mx-0.5 rounded font-semibold sm:text-lg text-white hover:bg-sky-600 transition-colors"
+                class="px-1 sm:px-3 py-1 mx-0.5 rounded font-semibold sm:text-lg text-white hover:bg-sky-500 transition-colors"
                 :class="ChartSportType.some((type) => type.Value === item.Value) ? 'bg-sky-600' : ''"
                 @click="ChangeChartSportType(item)"
               >
@@ -87,7 +87,8 @@
           <div class="hidden sm:flex flex-col justify-center items-center w-2/12 mr-2">
             <font-awesome-icon v-if="item.SportType === 'Run'" icon="fa-solid fa-person-running" class="text-2xl bg-yellow-200 p-4 rounded-full" />
             <font-awesome-icon v-else-if="item.SportType === 'Ride'" icon="fa-solid fa-person-biking" class="text-2xl bg-yellow-200 p-4 rounded-full" />
-            <font-awesome-icon v-else icon="fa-solid fa-person-swimming" class="text-2xl bg-yellow-200 p-4 rounded-full" />
+            <font-awesome-icon v-else-if="item.SportType === 'Swim'" icon="fa-solid fa-person-swimming" class="text-2xl bg-yellow-200 p-4 rounded-full" />
+            <font-awesome-icon v-else icon="fa-solid fa-person-walking" class="text-2xl bg-yellow-200 p-4 rounded-full" />
             <div class="text-xs font-semibold text-center text-gray-500 mt-2">
               {{ moment(item.Date).format('MMM D, YYYY') }}
             </div>
@@ -139,9 +140,15 @@
 import { ref, reactive, watch, onBeforeUnmount, computed } from 'vue';
 import ECharts from '../components/e-charts.vue';
 import ActivityService from '../services/ActivityService';
-// import UtilityService from '../services/UtilityService';
+import { loginStore } from '../stores/LoginStore';
+import UtilityService from '../services/UtilityService';
+import AthleteService from '../services/AthleteService';
+import { storeToRefs } from 'pinia';
 
+const store = loginStore();
+const { Alert } = UtilityService;
 const { moment } = window; // 時間格式
+const { IsLoggedIn } = storeToRefs(store);
 const MyCalendar = ref(); // 外勤紀錄本體
 const IsLoading = ref(true); // 是否讀取中
 const Activities = ref([]); // 全部活動
@@ -151,6 +158,7 @@ const NowDisplayTime = ref(''); // 現在顯示時間
 const NowTime = ref(new Date()); // 現在時間
 const StatisticsOverview = ref(''); // 運動統計概覽
 const Keyword = ref(''); // 關鍵字
+const MyAthlete = ref(AthleteService.MyAthlete);
 
 const TimeTypes = ref([
   { Name: '週', Value: 'Week' },
@@ -158,7 +166,7 @@ const TimeTypes = ref([
   { Name: '年', Value: 'Year' },
 ]);
 const NowTimeType = ref(TimeTypes.value[0].Value); // 現在時間統計類別
-const SportTypes = ref([{ Name: '全部', Value: 'All', Icon: '' }, ...Object.values(ActivityService.SportTypes)]);
+const SportTypes = ref([{ Name: '全部', Value: 'All', Icon: '' }, ...Object.values(ActivityService.SportTypes).filter((o) => o.IsDisplay)]);
 const ChartSportType = ref(SportTypes.value.slice(1)); // 圖表運動類別
 const RecentSportType = ref(SportTypes.value[0]); // 近期運動類別
 
@@ -181,7 +189,7 @@ const legendConfig = computed(() => {
   return {
     show: true,
     formatter: (name) => {
-      const series = ChartOption.series.find(s => s.name === name);
+      const series = ChartOption.series.find((s) => s.name === name);
       if (!series) return name;
       const total = series.data.reduce((sum, val) => sum + (val || 0), 0);
       return `${name}: ${total.toFixed(1)}K`;
@@ -437,8 +445,23 @@ const CalendarOptions = reactive({
 // 載入資料
 const LoadData = () => {
   IsLoading.value = true;
+
+  if (!IsLoggedIn.value) {
+    return Alert('請先登入', 'error').then(() => {
+      window.router.replace('/');
+      store.OpenLoginDialog();
+    });
+  }
+
+  if (!MyAthlete.value.ClientID) {
+    return Alert('請先授權Strava', 'error').then(() => {
+      window.router.replace('/');
+      store.OpenStravaDialog();
+    });
+  }
+
   // 取得跑步紀錄
-  ActivityService.GetActivities(108845218)
+  ActivityService.GetActivities(MyAthlete.value.ID)
     .then((o) => {
       o.forEach((p) => {
         const event = p;

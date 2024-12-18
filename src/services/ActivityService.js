@@ -1,19 +1,20 @@
-import axios from 'axios';
+import APIService from './APIService';
 
 export default class ActivityService {
   static ActivityCache = null;
   static ActivityLapsCache = {};
   static SportTypes = {
-    Run: { Name: '跑步', Value: 'Run', Icon: '🏃', TimeConstant: 60, Unit: 'min / km' },
-    Ride: { Name: '騎車', Value: 'Ride', Icon: '🚴', TimeConstant: 1, Unit: 'km/hr' },
-    Swim: { Name: '游泳', Value: 'Swim', Icon: '🏊', TimeConstant: 6, Unit: 'min / 100m' },
+    Run: { Name: '跑步', Value: 'Run', Icon: '🏃', TimeConstant: 60, Unit: 'min / km', IsDisplay: true },
+    Ride: { Name: '騎車', Value: 'Ride', Icon: '🚴', TimeConstant: 1, Unit: 'km/hr', IsDisplay: true },
+    Swim: { Name: '游泳', Value: 'Swim', Icon: '🏊', TimeConstant: 6, Unit: 'min / 100m', IsDisplay: true },
+    Hike: { Name: '健行', Value: 'Hike', Icon: '🧗', TimeConstant: 1, Unit: 'km/hr', IsDisplay: false },
   };
 
   // 取得活動
   static GetActivities(athleteID) {
     if (this.ActivityCache) return Promise.resolve(this.ActivityCache);
 
-    return axios.get(`/api/activities/${athleteID}`).then((o) => {
+    return APIService.get(`activities/${athleteID}`).then((o) => {
       this.ActivityCache = o.data;
       return o.data;
     });
@@ -23,7 +24,7 @@ export default class ActivityService {
   static GetActivityLaps(athleteID, activityID) {
     if (this.ActivityLapsCache[activityID]) return Promise.resolve(this.ActivityLapsCache[activityID]);
 
-    return axios.get(`/api/activities/laps/${athleteID}/${activityID}`).then((o) => {
+    return APIService.get(`activities/laps/${athleteID}/${activityID}`).then((o) => {
       this.ActivityLapsCache[activityID] = o.data;
       return o.data;
     });

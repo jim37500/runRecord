@@ -6,6 +6,7 @@ import (
 
 // 自動遷移資料庫
 func AutoMigrate(db *gorm.DB) {
+	migrateTable(db, &Account{})
 	migrateTable(db, &Athlete{})
 	migrateTable(db, &Activity{})
 	migrateTable(db, &Lap{})
@@ -24,10 +25,10 @@ func migrateTable(db *gorm.DB, structure interface{}) {
 
 // 檢查資料表有無資料
 func checkTableData(db *gorm.DB) {
-	// 若 沒運動員
-	var athlete Athlete
-	if db.First(&athlete).RowsAffected == 0 {
-		role := []Athlete{{ID: 108845218, ClientID: 134888, ClientSecret: "a613adf2b923051df828c21c1101895288334333", AccessToken: "dacc2edac2a5ced86883014ad2dec4c797cd065b", RefreshToken: "cb36f0f9e76a74b35d4df32a8a36693256cea1e9"}}
-		db.Create(role)
+	// 若沒帳號
+	var account Account
+	if db.First(&account).RowsAffected == 0 {
+		myAccount := Account{Name: "管理員", Email: "admin@gmail.com", Password: "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f", Status: 1, IsAdmin: 1}
+		db.Create(&myAccount)
 	}
 }

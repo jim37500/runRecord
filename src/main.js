@@ -4,9 +4,10 @@ import 'leaflet/dist/leaflet.css';
 import 'nprogress/nprogress.css';
 
 import { createApp } from 'vue';
+import { createPinia } from 'pinia';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { faPersonRunning, faPersonBiking, faPersonSwimming, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
+import { faPersonRunning, faPersonBiking, faPersonSwimming, faMagnifyingGlass, faPersonWalking } from '@fortawesome/free-solid-svg-icons';
 import { LMap, LGeoJson, LTileLayer, LPolyline } from '@vue-leaflet/vue-leaflet';
 import leaflet from 'leaflet';
 
@@ -19,7 +20,9 @@ import moment from 'moment';
 import Swal from 'sweetalert2';
 import mitt from 'mitt';
 import polyline from '@mapbox/polyline';
+import sha256 from 'sha256';
 
+import Checkbox from 'primevue/checkbox';
 import Divider from 'primevue/divider';
 import Paginator from 'primevue/paginator';
 import InputGroup from 'primevue/inputgroup';
@@ -29,10 +32,11 @@ import Column from 'primevue/column';
 // import Select from 'primevue/select';
 import SelectButton from 'primevue/selectbutton';
 import Button from 'primevue/button';
-// import Dialog from 'primevue/dialog';
+import Dialog from 'primevue/dialog';
 // import DatePicker from 'primevue/datepicker';
 // import InputNumber from 'primevue/inputnumber';
 import InputText from 'primevue/inputtext';
+import Tooltip from 'primevue/tooltip';
 // import Menubar from 'primevue/menubar';
 // import Tag from 'primevue/tag';
 
@@ -47,8 +51,9 @@ import * as echarts from 'echarts';
 import App from './App.vue';
 import router from './router';
 
-library.add(faPersonRunning, faPersonBiking, faPersonSwimming, faMagnifyingGlass);
+library.add(faPersonRunning, faPersonBiking, faPersonSwimming, faMagnifyingGlass, faPersonWalking);
 
+const pinia = createPinia();
 const app = createApp(App);
 
 const MyPreset = definePreset(Aura, {
@@ -81,7 +86,9 @@ window.echarts = echarts;
 window.emitter = mitt();
 window.polyline = polyline;
 window.leaflet = leaflet;
+window.sha256 = sha256;
 
+app.use(pinia);
 app.use(router);
 app.use(PrimeVue, {
   theme: {
@@ -95,6 +102,9 @@ app.use(PrimeVue, {
   },
 });
 
+app.directive('tooltip', Tooltip);
+
+app.component('primevue-checkbox', Checkbox);
 app.component('primevue-divider', Divider);
 app.component('primevue-paginator', Paginator);
 app.component('primevue-button', Button);
@@ -102,7 +112,7 @@ app.component('primevue-select-button', SelectButton);
 app.component('primevue-input-group', InputGroup);
 // app.component('FileUpload', FileUpload);
 app.component('primevue-data-table', DataTable);
-// app.component('Dialog', Dialog);
+app.component('primevue-dialog', Dialog);
 // app.component('Select', Select);
 
 app.component('primevue-column', Column);

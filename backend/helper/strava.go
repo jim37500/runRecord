@@ -1,4 +1,4 @@
-package api
+package helper
 
 import (
 	"encoding/json"
@@ -14,6 +14,7 @@ import (
 )
 
 var urlMap = map[string]string{
+	"Authorization":                "https://www.strava.com/oauth/token?grant_type=authorization_code",
 	"getLoggedInAthleteActivities": "https://www.strava.com/api/v3/athlete/activities?per_page=200",
 	"getLapsByActivityId":          "https://www.strava.com/api/v3/activities/{id}/laps",
 	"refreshToken":                 "https://www.strava.com/api/v3/oauth/token?", // client_id={client_id}&client_secret={client_secret}&grant_type=refresh_token&refresh_token={refresh_token}
@@ -49,6 +50,21 @@ func FetchStravaApi[T any](method string, url string, accessToken string, result
 	}
 
 	return result, nil
+}
+
+func AuthorizeStrava(myAthlete model.Athlete) bool {
+	authorizationUrl := fmt.Sprintf("%s&client_id=%d&client_secret=%s&code=%s", urlMap["Authorization"], myAthlete.ClientID, myAthlete.ClientSecret, myAthlete.AuthorizationCode)
+
+	tokens, err := FetchStravaApi("POST", authorizationUrl, "", data.Token{})
+	if err != nil || tokens.Athlete.AthleteID == 0 {
+		return false
+	}
+
+	myAthlete.ID = tokens.Athlete.AthleteID
+	myAthlete.AccessToken = tokens.AccessToken
+	myAthlete.RefreshToken = tokens.RefreshToken
+
+	return database.AddAthlete(&myAthlete)
 }
 
 func FetchNewAccessToken(myAthlete model.Athlete) string {
@@ -106,6 +122,7 @@ func FetchStravaActivities(myAthlete model.Athlete) error {
 	return nil
 }
 
+// 取得活動圈數
 func FetchStravaLaps(myAthlete model.Athlete, activityID string) error {
 	url := strings.Replace(urlMap["getLapsByActivityId"], "{id}", activityID, 1)
 

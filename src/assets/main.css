@@ -5,6 +5,10 @@
   z-index: 99999999;
 }
 
+.p-dialog-mask.p-component-overlay {
+  z-index: 3 !important;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -2,11 +2,21 @@ package database
 
 import "runRecord/model"
 
-// 依運動員主鍵取得運動員
-func GetAthleteByAthleteID(athleteID uint64) (athlete model.Athlete) {
+// 依主鍵取得運動員
+func GetAthleteByID(athleteID uint64) (athlete model.Athlete) {
 	db.First(&athlete, athleteID)
 
-	return 
+	return
+}
+
+func GetAthleteByAccountID(accountID uint) (athlete model.Athlete) {
+	db.Where("account_id = ?", accountID).First(&athlete)
+
+	return
+}
+
+func AddAthlete(myAthlete *model.Athlete) bool {
+	return db.Save(myAthlete).Error == nil
 }
 
 // 更新運動員權杖

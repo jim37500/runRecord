@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"runRecord/database"
+	"runRecord/helper"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/patrickmn/go-cache"
@@ -21,9 +22,9 @@ func GetActivities(context *fiber.Ctx) error {
 		return context.JSON(cachedData)
 	}
 
-	myAthlete := database.GetAthleteByAthleteID(uint64(athleteID)) // 依運動員主鍵取得運動員
+	myAthlete := database.GetAthleteByID(uint64(athleteID)) // 依運動員主鍵取得運動員
 
-	_ = FetchStravaActivities(myAthlete)
+	_ = helper.FetchStravaActivities(myAthlete)
 
 	activities := database.GetActivitiesByAthleteID(myAthlete.ID)
 
@@ -37,13 +38,13 @@ func GetActivityLaps(context *fiber.Ctx) error {
 	athleteID, _ := context.ParamsInt("athleteid") // 運動員主鍵
 	activityID := context.Params("activityid")     // 活動主鍵
 
-	myAthlete := database.GetAthleteByAthleteID(uint64(athleteID)) // 依運動員主鍵取得運動員
+	myAthlete := database.GetAthleteByID(uint64(athleteID)) // 依運動員主鍵取得運動員
 
 	activity := database.GetActivityByID(activityID)
 	laps := database.GetLaps(myAthlete.ID, activityID) // 取得跑步活動圈數
 	// 若 沒有跑步圈數 則 爬取後再取得跑步活動圈數
 	if len(laps) == 0 {
-		_ = FetchStravaLaps(myAthlete, activityID)
+		_ = helper.FetchStravaLaps(myAthlete, activityID)
 		laps = database.GetLaps(myAthlete.ID, activityID) // 取得跑步活動圈數
 	}
 	activity.Laps = laps
