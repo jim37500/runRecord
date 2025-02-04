@@ -31,13 +31,15 @@
         </div>
       </div>
 
+      <div ref="GoogleButton"></div>
+
       <!-- Google Sign In Button -->
-      <div class="w-full">
+      <!-- <div class="w-full">
         <button type="button" class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 transition-colors">
           <img class="w-7 mr-2 rounded-full" src="/images/google.png" alt="Google logo" />
           <span class="text-gray-700 font-semibold">使用Google登入</span>
         </button>
-      </div>
+      </div> -->
     </div>
 
     <template #footer>
@@ -116,11 +118,11 @@
 </template>
 
 <script setup>
-import { ref, watch, watchEffect } from 'vue';
-import { loginStore } from '../stores/LoginStore';
+import { onMounted, ref, watch, watchEffect } from 'vue';
+import { loginStore } from '@/stores/LoginStore';
 import { storeToRefs } from 'pinia';
-import UtilityService from '../services/UtilityService';
-import AthleteService from '../services/AthleteService';
+import UtilityService from '@/services/UtilityService';
+import AthleteService from '@/services/AthleteService';
 import TopBar from '../components/top-bar.vue';
 import Footer from '../components/home-footer.vue';
 
@@ -134,6 +136,35 @@ const LoginOrLogoutKey = ref(0);
 const IsStravaTutorialOpen = ref(false);
 const IsStravaAgree = ref(false);
 const StravaAuthorizationUrl = ref('');
+const GoogleButton = ref(null);
+
+const parseJwt = (token) => {
+  const base64Url = token.split('.')[1];
+  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  const jsonPayload = decodeURIComponent(
+    atob(base64)
+      .split('')
+      .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+      .join(''),
+  );
+  return JSON.parse(jsonPayload);
+};
+
+const handleCredentialResponse = (response) => {
+  const decodedToken = parseJwt(response.credential);
+  console.log(decodedToken);
+  Email.value = decodedToken.email;
+};
+
+const initializeGoogleLogin = () => {
+  // eslint-disable-next-line no-undef
+  google.accounts.id.initialize({
+    client_id: store.GoogleClientID,
+    callback: handleCredentialResponse,
+  });
+  // eslint-disable-next-line no-undef
+  google.accounts.id.renderButton(GoogleButton.value, { theme: 'outline', size: 'large' });
+};
 
 function Login() {
   if (!IsEmailValid(Email.value)) return Alert('請輸入正確的電子郵件', 'error');
@@ -188,5 +219,15 @@ watch(
 
 watchEffect(() => {
   StravaAuthorizationUrl.value = `https://www.strava.com/oauth/authorize?client_id=${MyAthlete.value.ClientID}&response_type=code&redirect_uri=http://localhost/exchange_token&approval_prompt=force&scope=read,activity:read_all`;
+});
+
+onMounted(() => {
+  // Load Google SDK
+  const googleScript = document.createElement('script');
+  googleScript.src = 'https://accounts.google.com/gsi/client';
+  googleScript.async = true;
+  googleScript.defer = true;
+  googleScript.onload = initializeGoogleLogin;
+  document.head.appendChild(googleScript);
 });
 </script>

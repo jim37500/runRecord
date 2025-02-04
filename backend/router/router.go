@@ -74,6 +74,7 @@ func notFoundHandler(context *fiber.Ctx, err error) error {
 func setupRoute() {
 	HttpApplication.Post("/api/token", api.GetToken)      // 取得帳號權杖
 	HttpApplication.Post("/api/register", api.AddAccount) // 取得註冊帳號
+	HttpApplication.Post("/api/googlelogin", api.GoogleLogin) // Google 登入
 
 	bindAuthorized() // 綁定授權
 }

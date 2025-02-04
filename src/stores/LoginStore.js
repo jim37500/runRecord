@@ -6,7 +6,8 @@ import AthleteService from '../services/AthleteService';
 import UserService from '../services/UserService';
 
 export const loginStore = defineStore('login', () => {
-  const IsLoginDialogOpen = ref(false);
+  const GoogleClientID = '446800395525-l8441okv81u7tnpeefaiobr6v27rcqa8.apps.googleusercontent.com';
+  const IsLoginDialogOpen = ref(true);
   const IsStravaDialogOpen = ref(false);
   const IsLoggedIn = ref(false);
   const Email = ref('');
@@ -37,8 +38,6 @@ export const loginStore = defineStore('login', () => {
     await UserService.GetCurrentUser();
     IsLoggedIn.value = true;
     window.router.push('/');
-
-
   }
 
   function logout() {
@@ -54,6 +53,7 @@ export const loginStore = defineStore('login', () => {
   }
 
   return {
+    GoogleClientID,
     IsLoginDialogOpen,
     IsStravaDialogOpen,
     IsLoggedIn,
